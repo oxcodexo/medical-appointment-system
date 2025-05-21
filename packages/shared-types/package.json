@@ -1,0 +1,20 @@
+{
+  "name": "@medical-appointment-system/shared-types",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf .turbo node_modules dist"
+  },
+  "devDependencies": {
+    "eslint": "^9.9.0",
+    "eslint-config-custom": "*",
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.3"
+  }
+}
