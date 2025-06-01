@@ -17,6 +17,7 @@ const doctorRoutes = require('./routes/doctor.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const specialtyRoutes = require('./routes/specialty.routes');
 const medicalDossierRoutes = require('./routes/medicalDossier.routes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 // Import security and notification routes
 const permissionRoutes = require('./routes/permission.routes');
@@ -61,6 +62,9 @@ app.use('/api/role-permissions', rolePermissionRoutes);
 app.use('/api/user-permissions', userPermissionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/notification-templates', notificationTemplateRoutes);
+
+// Chatbot routes
+app.use('/api/chatbot', chatbotRoutes);
 
 // Root route
 app.get('/', (req, res) => {

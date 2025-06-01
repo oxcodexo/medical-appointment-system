@@ -6,38 +6,19 @@ export * from './constants/permissions';
 // Export appointment types
 export * from './types/appointment';
 
+// Export user types
+export * from './types/user';
+
 // Export doctor types
 export * from './types/doctor';
 
-// User types
-export interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: UserRole;
-  phone?: string;
-  address?: string;
-  status?: UserStatus;
-  lastLogin?: string;
-  emailVerified?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string | null;
-  image?: string;
-}
+// Export specialty types
+export * from './types/specialty';
 
-export enum UserRole {
-  PATIENT = 'patient',
-  DOCTOR = 'doctor',
-  ADMIN = 'admin',
-  RESPONSABLE = 'responsable'
-}
+// Export chatbot types
+export * from './types/chatbot';
 
-export enum UserStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended'
-}
+// API response types are defined here to avoid circular dependencies
 
 // API response types
 export interface ApiResponse<T> {

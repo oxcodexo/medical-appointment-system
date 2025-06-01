@@ -3,10 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
-import { UNSAFE_DataRouterContext, UNSAFE_DataRouterStateContext, UNSAFE_NavigationContext, UNSAFE_LocationContext, UNSAFE_RouteContext } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext/provider";
-import { NotificationProvider } from "@/contexts/NotificationContext";
 
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
@@ -20,6 +18,7 @@ import Dashboard from "@/pages/Dashboard";
 import About from "@/pages/About";
 import NotFound from "@/pages/NotFound";
 import UnauthorizedPage from "@/pages/Unauthorized";
+import ChatBot from "./components/ChatBot";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +91,8 @@ const App = () => (
               </Routes>
             </main>
             <Footer />
+            {/* Add ChatBot component here so it's available on all pages */}
+            <ChatBot />
           </div>
         </BrowserRouter>
       </TooltipProvider>

@@ -3,9 +3,9 @@
 import { Appointment, User } from "..";
 
 /**
- * Specialty interface - represents a medical specialty
+ * Doctor specialty interface - represents a medical specialty (renamed to avoid conflicts)
  */
-export interface Specialty {
+export interface DoctorSpecialty {
   id: number;
   name: string;
   createdAt?: string;
@@ -39,7 +39,7 @@ export interface Doctor extends DoctorData {
   createdAt: string;
   updatedAt: string;
   user?: User;
-  specialty?: Specialty;
+  specialty?: DoctorSpecialty;
   doctorAvailabilities?: DoctorAvailability[];
   doctorAbsences?: DoctorAbsence[];
   appointments?: Appointment[];
