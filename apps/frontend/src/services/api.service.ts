@@ -28,7 +28,6 @@ class ApiService {
         try {
           const token = localStorage.getItem('medical_auth_token');
           if (token) {
-            console.log("token",token.length)
             config.headers['Authorization'] = `Bearer ${token}`;
           }
           return config;

@@ -105,7 +105,6 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
 
     try {
       // Step 1: Update appointment status
-      console.log('Updating appointment status:', appointment.id, status, notes);
       await appointmentService.updateAppointmentStatus(appointment.id, status, notes);
 
       // Step 2: Update medical records (only for doctors/admins)

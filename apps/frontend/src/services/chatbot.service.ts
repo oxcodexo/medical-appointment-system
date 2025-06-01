@@ -81,8 +81,6 @@ export class ChatbotService {
         userId: userId?.toString()
       };
 
-      console.log("request", request);
-
       const response: AxiosResponse<ApiResponse<ChatbotResponse>> = await apiService.post(
         `${this.baseUrl}/message`,
         request

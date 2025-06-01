@@ -60,7 +60,6 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
 
       // Update using the service
       const updatedDoctor = await doctorService.updateDoctor(doctor.id, doctorData);
-      console.log(" updatedDoctor ", updatedDoctor);
 
       // Update UI with the returned data
       setProfile(updatedDoctor);

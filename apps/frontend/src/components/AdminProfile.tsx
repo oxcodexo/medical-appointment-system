@@ -26,8 +26,6 @@ const AdminProfile = () => {
 
   const handleSave = () => {
     // In a real app, this would call an API to save
-    console.log('Saving profile:', profile);
-
     // Update UI
     setIsEditMode(false);
 

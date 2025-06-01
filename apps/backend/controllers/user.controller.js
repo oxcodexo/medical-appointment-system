@@ -164,8 +164,6 @@ async function sendUserNotification(userId, type, metadata = {}) {
 exports.findAll = async (req, res) => {
   try {
     const users = await User.findAll();
-
-    console.log("findAllusers",users)
     res.status(200).json(users);
   } catch (err) {
     console.error('Error retrieving users:', err);

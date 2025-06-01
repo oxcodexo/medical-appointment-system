@@ -78,7 +78,6 @@ const AdminDashboard = () => {
 
       // Fetch all appointments with pagination
       const { appointments: appointmentsData, pagination } = await appointmentService.getAllAppointments();
-      console.log("appointmentsData", appointmentsData)
       setAppointments(appointmentsData);
       setAppointmentPagination(pagination);
     } catch (error) {

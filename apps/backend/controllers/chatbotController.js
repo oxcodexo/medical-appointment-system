@@ -17,9 +17,6 @@ exports.processMessage = async (req, res) => {
     if (!_sessionId)
       _sessionId = uuidv4();
 
-    console.log("sessionId2", _sessionId);
-    console.log("message", message);
-    
     chatbot.addToConversationHistory(_sessionId, message, true);
     
     const responseData = await chatbot.getResponse(message);
