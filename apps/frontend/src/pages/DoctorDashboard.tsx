@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { appointmentApi, doctorApi } from '@/lib/api';
-import { format, startOfWeek, addDays, parseISO } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, User, FilePlus, Calendar } from 'lucide-react';
-import { Appointment, Doctor } from '@/lib/types';
+import { format, startOfWeek, addDays } from 'date-fns';
+import { Clock, User, FilePlus, Calendar } from 'lucide-react';
+import { Appointment, Doctor, AppointmentStatus } from '@medical-appointment-system/shared-types';
+import { doctorService } from '@/services/doctor.service';
+import { appointmentService } from '@/services/appointment.service';
 
 import {
   Card,
@@ -21,11 +22,6 @@ import {
 } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import DoctorSchedule from '@/components/DoctorSchedule';
 import DoctorProfile from '@/components/DoctorProfile';
@@ -49,14 +45,14 @@ const DoctorDashboard = () => {
       try {
         if (!user) return;
 
-        // Using the getDoctorByUserId function
-        const doctorResponse = await doctorApi.getByUserId(user.id);
-        const doctor = doctorResponse.data;
+        // Using the doctorService to get doctor by user ID
+        const doctor = await doctorService.getDoctorByUserId(user.id);
         setDoctorInfo(doctor);
 
         if (doctor) {
-          const appointmentsResponse = await appointmentApi.getByDoctor(doctor.id);
-          setAppointments(appointmentsResponse.data);
+          // Using the appointmentService to get appointments by doctor
+          const doctorAppointments = await appointmentService.getAppointmentsByDoctor(doctor.id);
+          setAppointments(doctorAppointments);
         }
       } catch (error) {
         console.error('Error fetching doctor data:', error);
@@ -80,14 +76,16 @@ const DoctorDashboard = () => {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'confirmed':
+      case AppointmentStatus.CONFIRMED:
         return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Confirmed</Badge>;
-      case 'pending':
+      case AppointmentStatus.PENDING:
         return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pending</Badge>;
-      case 'completed':
+      case AppointmentStatus.COMPLETED:
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Completed</Badge>;
-      case 'canceled':
+      case AppointmentStatus.CANCELED:
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Canceled</Badge>;
+      case AppointmentStatus.NO_SHOW:
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">No Show</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -189,13 +187,13 @@ const DoctorDashboard = () => {
         <div className="mb-6 flex items-center">
           <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 mr-4">
             <img
-              src={doctorInfo.image || '/placeholder.svg'}
-              alt={doctorInfo.name}
+              src={doctorInfo.user?.image || '/placeholder.svg'}
+              alt={doctorInfo.user?.name}
               className="w-full h-full object-cover"
             />
           </div>
           <div>
-            <h2 className="text-xl font-bold">{doctorInfo.name}</h2>
+            <h2 className="text-xl font-bold">{doctorInfo.user?.name}</h2>
             <p className="text-gray-600">{doctorInfo.specialty?.name}</p>
           </div>
         </div>

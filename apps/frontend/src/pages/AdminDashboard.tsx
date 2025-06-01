@@ -1,12 +1,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { userApi, doctorApi, appointmentApi } from '@/lib/api';
-import { User, Doctor, Appointment } from '@/lib/types';
+import userService from '@/services/user.service';
+import doctorService from '@/services/doctor.service';
+import appointmentService, { PaginationResponse } from '@/services/appointment.service';
+import { User, Doctor, Appointment } from '@medical-appointment-system/shared-types';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -46,6 +47,14 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentPagination, setAppointmentPagination] = useState<PaginationResponse>({
+    total: 0,
+    totalPages: 0,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [appointmentSearchTerm, setAppointmentSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('users');
@@ -55,21 +64,23 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
-  
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch all users
-      const usersResponse = await userApi.getAll();
-      setUsers(usersResponse.data);
-      
+      const usersData = await userService.getAllUsers();
+      setUsers(usersData);
+
       // Fetch all doctors
-      const doctorsResponse = await doctorApi.getAll();
-      setDoctors(doctorsResponse.data);
-      
-      // Fetch all appointments
-      const appointmentsResponse = await appointmentApi.getAll();
-      setAppointments(appointmentsResponse.data);
+      const doctorsData = await doctorService.getAllDoctors();
+      setDoctors(doctorsData);
+
+      // Fetch all appointments with pagination
+      const { appointments: appointmentsData, pagination } = await appointmentService.getAllAppointments();
+      console.log("appointmentsData", appointmentsData)
+      setAppointments(appointmentsData);
+      setAppointmentPagination(pagination);
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
@@ -81,112 +92,126 @@ const AdminDashboard = () => {
       setIsLoading(false);
     }
   }, [toast]);
-  
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-  
+
   const filteredUsers = users.filter(user => {
-    const matchesTerm = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesTerm = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (activeUserType === 'all') {
       return matchesTerm;
     }
-    
+
     return matchesTerm && user.role === activeUserType;
   });
-  
+
   const filteredAppointments = appointments.filter(appointment => {
     if (!appointmentSearchTerm) return true;
-    
+
     const searchLower = appointmentSearchTerm.toLowerCase();
     const patientNameMatch = appointment.patientName.toLowerCase().includes(searchLower);
-    
+
     const doctor = doctors.find(d => d.id === appointment.doctorId);
-    const doctorNameMatch = doctor ? doctor.name.toLowerCase().includes(searchLower) : false;
-    
+    const doctorNameMatch = doctor ? doctor.user?.name.toLowerCase().includes(searchLower) : false;
+
     const statusMatch = appointment.status.toLowerCase().includes(searchLower);
     const dateMatch = appointment.date.includes(searchLower);
-    
+
     return patientNameMatch || doctorNameMatch || statusMatch || dateMatch;
   });
-  
+
   const handleCreateUser = () => {
     setEditingUser(null);
     setIsUserFormOpen(true);
   };
-  
+
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setIsUserFormOpen(true);
   };
-  
+
   const handleDeleteUser = async (userId: number) => {
-    try {
-      // Call the API to delete the user
-      await userApi.delete(userId);
-      
-      // Remove the user from the local state
-      setUsers(users.filter(u => u.id !== userId));
-      
-      // If the user was a doctor, remove them from the doctors list too
-      setDoctors(doctors.filter(d => d.userId !== userId));
-      
-      toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted."
-      });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      toast({
-        title: "Error deleting user",
-        description: "There was a problem deleting the user.",
-        variant: "destructive"
-      });
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        await userService.deleteUser(userId);
+
+        // Remove user from state
+        setUsers(users.filter(user => user.id !== userId));
+
+        // If the user was a doctor, also remove from doctors list
+        setDoctors(doctors.filter(doctor => doctor.userId !== userId));
+
+        toast({
+          title: "User deleted",
+          description: "The user has been successfully deleted.",
+        });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        toast({
+          title: "Error deleting user",
+          description: "There was a problem deleting the user.",
+          variant: "destructive"
+        });
+      }
     }
   };
-  
-  interface UserFormData {
-    name: string;
-    email: string;
-    password?: string;
-    role: string;
-    phone?: string;
-    specialtyId?: number;
-  }
-  
-  const handleUserFormSubmit = async (formData: UserFormData) => {
+
+  const handleUserFormSubmit = async (formData: Partial<User>) => {
     try {
-      let response;
-      
       if (editingUser) {
         // Update existing user
-        response = await userApi.update(editingUser.id, formData);
-        
-        // Update the user in the local state
-        setUsers(users.map(u => u.id === editingUser.id ? response.data : u));
-        
+        const updatedUser = await userService.updateUser(editingUser.id, formData);
+
+        // Update users list
+        setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u));
+
         toast({
           title: "User updated",
-          description: "The user has been successfully updated."
+          description: "The user has been successfully updated.",
         });
       } else {
         // Create new user
-        response = await userApi.create(formData);
-        
-        // Add the new user to the local state
-        setUsers([...users, response.data]);
-        
+        const newUser = await userService.createUser(formData);
+
+        // Add new user to list
+        setUsers([...users, newUser]);
+
         toast({
           title: "User created",
-          description: "The new user has been successfully created."
+          description: "The new user has been successfully created.",
         });
       }
-      
-      // Close the form dialog
+
+      // Close the dialog and reset editing state
       setIsUserFormOpen(false);
       setEditingUser(null);
+
+      // If we created/updated a doctor, refresh the doctors list
+      if (formData.role === 'doctor') {
+        const doctorsData = await doctorService.getAllDoctors();
+        // Convert shared-types Doctor to local Doctor type
+        const mappedDoctors = doctorsData.map(doctor => ({
+          id: doctor.id,
+          name: doctor.user?.name || 'Unknown',
+          specialtyId: doctor.specialtyId,
+          specialty: doctor.specialty,
+          image: doctor.image || '',
+          bio: doctor.bio || '',
+          experience: doctor.experience || '',
+          rating: doctor.rating || 0,
+          email: doctor.user?.email,
+          phone: doctor.user?.phone,
+          doctorAvailabilities: doctor.doctorAvailabilities,
+          doctorAbsences: doctor.doctorAbsences,
+          userId: doctor.userId,
+          createdAt: doctor.createdAt,
+          updatedAt: doctor.updatedAt
+        }));
+        setDoctors(mappedDoctors);
+      }
     } catch (error) {
       console.error('Error saving user:', error);
       toast({
@@ -196,24 +221,49 @@ const AdminDashboard = () => {
       });
     }
   };
-  
+
   const handleViewAppointment = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setIsAppointmentDetailsOpen(true);
   };
-  
-  const handleAppointmentUpdate = (updatedAppointment: Appointment) => {
-    // Update the appointments list
-    const updatedAppointments = appointments.map(appointment => 
-      appointment.id === updatedAppointment.id ? updatedAppointment : appointment
-    );
-    setAppointments(updatedAppointments);
+
+  const handleAppointmentUpdate = async (updatedAppointment: Appointment) => {
+    try {
+      // Update appointment in the backend
+      // Convert local Appointment type to shared-types AppointmentData for the API
+      const appointmentData = {
+        doctorId: updatedAppointment.doctorId,
+        patientName: updatedAppointment.patientName,
+        patientEmail: updatedAppointment.patientEmail,
+        patientPhone: updatedAppointment.patientPhone,
+        date: updatedAppointment.date,
+        time: updatedAppointment.time,
+        status: updatedAppointment.status,
+        reason: updatedAppointment.reason,
+        userId: updatedAppointment.userId,
+        notes: updatedAppointment.notes
+      };
+
+      await appointmentService.updateAppointment(updatedAppointment.id, appointmentData);
+
+      // Update appointments list with the updated appointment
+      setAppointments(appointments.map(a =>
+        a.id === updatedAppointment.id ? updatedAppointment : a
+      ));
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      toast({
+        title: "Error updating appointment",
+        description: "There was a problem updating the appointment.",
+        variant: "destructive"
+      });
+    }
   };
-  
+
   const countUsersByRole = (role: string) => {
     return users.filter(user => user.role === role).length;
   };
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -221,12 +271,12 @@ const AdminDashboard = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -238,7 +288,7 @@ const AdminDashboard = () => {
               <p className="text-xs text-muted-foreground">All registered users</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-md font-medium">Patients</CardTitle>
@@ -249,7 +299,7 @@ const AdminDashboard = () => {
               <p className="text-xs text-muted-foreground">Registered patients</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-md font-medium">Doctors</CardTitle>
@@ -260,7 +310,7 @@ const AdminDashboard = () => {
               <p className="text-xs text-muted-foreground">Active doctors</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-md font-medium">Appointments</CardTitle>
@@ -272,7 +322,7 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="users">
@@ -285,7 +335,7 @@ const AdminDashboard = () => {
               <UserIcon className="mr-2 h-4 w-4" />My Profile
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="users" className="mt-0">
             <Card>
               <CardHeader>
@@ -302,7 +352,7 @@ const AdminDashboard = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
-                    
+
                     <Button onClick={handleCreateUser}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Add User
@@ -310,36 +360,36 @@ const AdminDashboard = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4">
-                  <Badge 
-                    variant={activeUserType === 'all' ? 'default' : 'outline'} 
-                    className="cursor-pointer" 
+                  <Badge
+                    variant={activeUserType === 'all' ? 'default' : 'outline'}
+                    className="cursor-pointer"
                     onClick={() => setActiveUserType('all')}
                   >
                     All Users
                   </Badge>
-                  <Badge 
-                    variant={activeUserType === 'patient' ? 'default' : 'outline'} 
+                  <Badge
+                    variant={activeUserType === 'patient' ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('patient')}
                   >
                     Patients
                   </Badge>
-                  <Badge 
-                    variant={activeUserType === 'doctor' ? 'default' : 'outline'} 
+                  <Badge
+                    variant={activeUserType === 'doctor' ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('doctor')}
                   >
                     Doctors
                   </Badge>
-                  <Badge 
-                    variant={activeUserType === 'responsable' ? 'default' : 'outline'} 
+                  <Badge
+                    variant={activeUserType === 'responsable' ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('responsable')}
                   >
                     Responsables
                   </Badge>
-                  <Badge 
-                    variant={activeUserType === 'admin' ? 'default' : 'outline'} 
+                  <Badge
+                    variant={activeUserType === 'admin' ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('admin')}
                   >
@@ -381,7 +431,7 @@ const AdminDashboard = () => {
                                   <DropdownMenuItem onClick={() => handleEditUser(user)}>
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     className="text-red-600"
                                     onClick={() => handleDeleteUser(user.id)}
                                   >
@@ -403,7 +453,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="appointments" className="mt-0">
             <Card>
               <CardHeader>
@@ -436,11 +486,14 @@ const AdminDashboard = () => {
                       </TableHeader>
                       <TableBody>
                         {filteredAppointments.map((appointment) => {
-                          const doctor = doctors.find(d => d.id === appointment.doctorId);
+                          // Get doctor information either from the included doctor object or by finding it in the doctors array
+                          const doctor = appointment.doctor || doctors.find(d => d.id === appointment.doctorId);
+                          // Get patient information either from the included user object or use patientName
+                          const patientName = appointment.user?.name || appointment.patientName || 'Unknown Patient';
                           return (
                             <TableRow key={appointment.id}>
-                              <TableCell className="font-medium">{appointment.patientName}</TableCell>
-                              <TableCell>{doctor?.name || 'Unknown Doctor'}</TableCell>
+                              <TableCell className="font-medium">{patientName}</TableCell>
+                              <TableCell>{doctor ? (doctor.user?.name || 'Unknown Doctor') : 'Unknown Doctor'}</TableCell>
                               <TableCell>
                                 <div className="flex flex-col">
                                   <span>{appointment.date}</span>
@@ -458,8 +511,8 @@ const AdminDashboard = () => {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right">
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   size="sm"
                                   onClick={() => handleViewAppointment(appointment)}
                                 >
@@ -480,22 +533,22 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="profile" className="mt-0">
             <AdminProfile />
           </TabsContent>
         </Tabs>
       </div>
-      
+
       {/* User Form Dialog */}
-      <UserFormDialog 
+      <UserFormDialog
         open={isUserFormOpen}
         onOpenChange={setIsUserFormOpen}
         user={editingUser}
         doctors={doctors}
-        onSave={handleUserFormSubmit}
+        onUserSaved={handleUserFormSubmit}
       />
-      
+
       {/* Appointment Details Dialog */}
       {selectedAppointment && (
         <AppointmentDetailsDialog

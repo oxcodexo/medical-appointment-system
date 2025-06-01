@@ -1,3 +1,4 @@
+import { AppointmentStatus } from "@medical-appointment-system/shared-types";
 
 // Types for our application
 export interface Doctor {
@@ -14,10 +15,7 @@ export interface Doctor {
   phone?: string;
   // Schedule information
   doctorAvailabilities?: DoctorAvailability[];
-  doctorAbsences?: DoctorAbsence[];
-  // Legacy property names - keeping for backward compatibility
-  availability?: DoctorAvailability[];
-  absences?: DoctorAbsence[];
+  doctorAbsences?: DoctorAbsence[]; 
   userId?: number; // Link to user account
   createdAt?: string;
   updatedAt?: string;
@@ -51,7 +49,7 @@ export interface User {
   updatedAt?: string;
   // Relations that might be populated by API
   doctor?: Doctor;
-  profile?: UserProfile;
+  userProfile?: UserProfile; // Changed from profile to userProfile to match backend
   // We don't include password here for security reasons
 }
 
@@ -63,7 +61,7 @@ export interface Appointment {
   patientPhone: string;
   date: string;
   time: string;
-  status: 'pending' | 'confirmed' | 'canceled' | 'completed';
+  status: AppointmentStatus;
   reason: string;
   userId?: number; // Optional, only if booked by a registered user
   notes?: string; // Doctor's notes about appointment
@@ -122,6 +120,49 @@ export interface UserProfile {
   chronicConditions?: string[];
   createdAt?: string;
   updatedAt?: string;
-  // Relations that might be populated by API
   user?: User;
+}
+
+// Pagination types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginationResponse<T> {
+  items: T[];
+  metadata: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+// Filter types
+export interface FilterParams {
+  [key: string]: string | number | boolean | string[] | number[] | null | undefined;
+}
+
+// Notification filter params
+export interface NotificationFilterParams extends PaginationParams, FilterParams {
+  isRead?: boolean;
+  type?: string | string[];
+  priority?: 'low' | 'normal' | 'high' | 'urgent' | ('low' | 'normal' | 'high' | 'urgent')[];
+  startDate?: string;
+  endDate?: string;
+  channel?: string | string[];
+  deliveryStatus?: 'pending' | 'sent' | 'delivered' | 'failed' | ('pending' | 'sent' | 'delivered' | 'failed')[];
+}
+
+// Notification template filter params
+export interface NotificationTemplateFilterParams extends PaginationParams, FilterParams {
+  name?: string;
+  type?: string | string[];
+  isActive?: boolean;
+  channel?: string | string[];
 }

@@ -1,8 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doctorApi, appointmentApi } from '@/lib/api';
-import { Doctor } from '@/lib/types';
+import doctorService from '@/services/doctor.service';
+import { appointmentService } from '@/services/appointment.service';
+import type {
+  Doctor,
+  DoctorAvailability,
+  DoctorAbsence,
+  AppointmentData
+} from '@medical-appointment-system/shared-types';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -18,7 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, Star, Phone, Mail, Check, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Star, Phone, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,11 +33,11 @@ const DoctorDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  
+
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  
+
   // Booking form state
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -41,19 +47,19 @@ const DoctorDetail = () => {
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingFor, setBookingFor] = useState<'self' | 'other'>('self');
-  
+
   // Available time slots based on doctor's schedule
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
-  
+
   useEffect(() => {
     const fetchDoctor = async () => {
       setIsLoading(true);
       try {
         if (!id) return;
-        
-        const response = await doctorApi.getById(parseInt(id));
-        if (response.data) {
-          setDoctor(response.data);
+
+        const doctorData = await doctorService.getDoctorById(parseInt(id));
+        if (doctorData) {
+          setDoctor(doctorData);
         } else {
           navigate('/doctors'); // Redirect if doctor not found
         }
@@ -64,21 +70,21 @@ const DoctorDetail = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchDoctor();
   }, [id, navigate]);
-  
+
   useEffect(() => {
     // When user selects a date, get available time slots
     const fetchTimeSlots = async () => {
       if (selectedDate && doctor) {
         try {
           const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-          const response = await doctorApi.getAvailableTimeSlots(doctor.id, formattedDate);
-          setAvailableTimeSlots(response.data);
-          
+          const timeSlots = await doctorService.getAvailableTimeSlots(doctor.id, formattedDate);
+          setAvailableTimeSlots(timeSlots);
+
           // Reset selected time if it's no longer available
-          if (selectedTime && !response.data.includes(selectedTime)) {
+          if (selectedTime && !timeSlots.includes(selectedTime)) {
             setSelectedTime(null);
           }
         } catch (error) {
@@ -87,55 +93,64 @@ const DoctorDetail = () => {
         }
       }
     };
-    
+
     fetchTimeSlots();
   }, [selectedDate, doctor, selectedTime]);
-  
+
   const handleBookAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!doctor || !selectedDate || !selectedTime) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      
-      // If booking for self and authenticated, use user's information
-      const appointmentData = {
+
+      // Prepare appointment data
+      const appointmentData: AppointmentData = {
         doctorId: doctor.id,
-        patientName: bookingFor === 'self' && isAuthenticated && user ? user.name : patientName,
-        patientEmail: bookingFor === 'self' && isAuthenticated && user ? user.email : patientEmail,
-        patientPhone: bookingFor === 'self' && isAuthenticated && user ? (user.phone || patientPhone) : patientPhone,
         date: formattedDate,
         time: selectedTime,
-        status: 'pending',
-        reason,
-        userId: bookingFor === 'self' && isAuthenticated && user ? user.id : null,
-        notes: null
+        reason: reason, // Using the correct state variable for reason
+        notes: '' // Default empty notes since we don't have a state for it
       };
-      
-      await appointmentApi.create(appointmentData);
-      
+
+      // If booking for self and authenticated, use user's information
+      if (user && bookingFor === 'self') {
+        appointmentData.userId = user.id;
+      } else {
+        // Otherwise use guest information
+        appointmentData.patientName = patientName;
+        appointmentData.patientEmail = patientEmail;
+        appointmentData.patientPhone = patientPhone;
+        appointmentData.isGuestBooking = true;
+      }
+
+      // Call the API to create the appointment
+      await appointmentService.createAppointment(appointmentData);
+
       toast({
         title: "Appointment booked successfully!",
-        description: `Your appointment with ${doctor.name} on ${formattedDate} at ${selectedTime} is pending confirmation.`,
+        description: `Your appointment with ${doctor.user?.name} on ${formattedDate} at ${selectedTime} is pending confirmation.`,
       });
-      
+
       setIsBookingModalOpen(false);
       resetForm();
-      
+
     } catch (error) {
       console.error('Error booking appointment:', error);
       toast({
         title: "Error booking appointment",
-        description: "There was a problem booking your appointment. Please try again.",
+        description: typeof error === 'object' && error !== null && 'message' in error
+          ? String(error.message)
+          : "There was a problem booking your appointment. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const resetForm = () => {
     setSelectedDate(undefined);
     setSelectedTime(null);
@@ -146,37 +161,31 @@ const DoctorDetail = () => {
     setAvailableTimeSlots([]);
     setBookingFor('self');
   };
-  
+
   const formatWorkingHours = (doctor: Doctor) => {
     if (!doctor.doctorAvailabilities || doctor.doctorAvailabilities.length === 0) {
-      return {
-        monday: 'Not available',
-        tuesday: 'Not available',
-        wednesday: 'Not available',
-        thursday: 'Not available',
-        friday: 'Not available',
-        saturday: 'Not available',
-        sunday: 'Not available',
-      };
+      return { 'No availability': 'Working hours not specified' };
     }
-    
-    const schedule: Record<string, string> = {
-      monday: 'Not available',
-      tuesday: 'Not available',
-      wednesday: 'Not available',
-      thursday: 'Not available',
-      friday: 'Not available',
-      saturday: 'Not available',
-      sunday: 'Not available',
-    };
-    
-    doctor.doctorAvailabilities.forEach(item => {
-      schedule[item.dayOfWeek] = `${item.startTime} - ${item.endTime}`;
+
+    // Create an object with days as keys and time ranges as values
+    const workingHours: Record<string, string> = {};
+    const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+    // Initialize all days as 'Not available'
+    daysOrder.forEach(day => {
+      workingHours[day] = 'Not available';
     });
-    
-    return schedule;
+
+    // Update with actual availabilities
+    doctor.doctorAvailabilities.forEach(availability => {
+      if (availability.dayOfWeek && availability.startTime && availability.endTime) {
+        workingHours[availability.dayOfWeek] = `${availability.startTime} - ${availability.endTime}`;
+      }
+    });
+
+    return workingHours;
   };
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -184,7 +193,7 @@ const DoctorDetail = () => {
       </div>
     );
   }
-  
+
   if (!doctor) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -196,9 +205,7 @@ const DoctorDetail = () => {
       </div>
     );
   }
-  
-  const workingHours = formatWorkingHours(doctor);
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -207,16 +214,20 @@ const DoctorDetail = () => {
           <div className="bg-gradient-to-r from-medical-primary to-medical-secondary p-6 md:p-8">
             <div className="md:flex items-center">
               <div className="md:flex-shrink-0 mb-4 md:mb-0">
-                <div className="h-24 w-24 rounded-full bg-white p-1 overflow-hidden">
-                  <img 
-                    src={doctor.image} 
-                    alt={doctor.name} 
-                    className="h-full w-full object-cover rounded-full"
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-blue-100 overflow-hidden">
+                  <img
+                    src={doctor.image || '/placeholder.svg'}
+                    alt={doctor.user?.name || 'Doctor'}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.svg';
+                    }}
                   />
                 </div>
               </div>
               <div className="md:ml-6 text-white">
-                <h1 className="text-2xl md:text-3xl font-bold">{doctor.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{doctor.user?.name}</h1>
                 <p className="text-blue-100">{doctor.specialty?.name}</p>
                 <div className="flex items-center mt-2">
                   <Star size={16} fill="white" stroke="none" />
@@ -226,7 +237,7 @@ const DoctorDetail = () => {
                 </div>
               </div>
               <div className="mt-6 md:mt-0 md:ml-auto">
-                <Button 
+                <Button
                   className="bg-white text-medical-primary hover:bg-blue-50"
                   size="lg"
                   onClick={() => setIsBookingModalOpen(true)}
@@ -236,14 +247,14 @@ const DoctorDetail = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Doctor details */}
           <div className="p-6 md:p-8">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2">
                 <h2 className="text-xl font-semibold mb-4">About</h2>
                 <p className="text-gray-700 mb-6">{doctor.bio}</p>
-                
+
                 <h2 className="text-xl font-semibold mb-4">Specializations</h2>
                 <div className="flex flex-wrap gap-2 mb-6">
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
@@ -253,14 +264,14 @@ const DoctorDetail = () => {
                     General Consultation
                   </span>
                 </div>
-                
+
                 <h2 className="text-xl font-semibold mb-4">Education & Experience</h2>
                 <div className="mb-6 space-y-4">
                   <div className="flex">
                     <div className="flex-shrink-0 h-4 w-4 mt-1 rounded-full bg-medical-primary"></div>
                     <div className="ml-3">
-                      <p className="font-medium">Medical School</p>
-                      <p className="text-gray-600 text-sm">University Medical School</p>
+                      <p className="font-medium">About {doctor.user?.name || 'the Doctor'}</p>
+                      <p className="text-gray-600 text-sm">{doctor.bio || 'No biography available.'}</p>
                     </div>
                   </div>
                   <div className="flex">
@@ -274,45 +285,45 @@ const DoctorDetail = () => {
                     <div className="flex-shrink-0 h-4 w-4 mt-1 rounded-full bg-medical-primary"></div>
                     <div className="ml-3">
                       <p className="font-medium">Professional Experience</p>
-                      <p className="text-gray-600 text-sm">{doctor.experience} as {doctor.specialty?.name} Specialist</p>
+                      <p className="text-gray-600 text-sm">{doctor.experience || `${doctor.yearsOfExperience || 0} years of experience as ${doctor.specialty?.name || 'Medical'} Specialist`}</p>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h2 className="text-lg font-medium mb-4">Contact Information</h2>
                   <div className="space-y-3">
                     <div className="flex items-center">
                       <Phone size={18} className="text-medical-primary mr-3" />
-                      <span className="text-gray-700">{doctor.phone || "(555) 123-4567"}</span>
+                      <span className="text-gray-700">{doctor.user?.phone || 'No phone available'}</span>
                     </div>
                     <div className="flex items-center">
                       <Mail size={18} className="text-medical-primary mr-3" />
-                      <span className="text-gray-700">{doctor.email || "contact@example.com"}</span>
+                      <span className="text-gray-700">{doctor.user?.email || 'No email available'}</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6 pt-6 border-t border-gray-200">
                     <h3 className="font-medium mb-2">Working Hours</h3>
                     <div className="text-sm space-y-2">
-                      {Object.entries(workingHours).map(([day, hours]) => (
+                      {Object.entries(formatWorkingHours(doctor)).map(([day, hours]) => (
                         <div key={day} className="flex justify-between">
                           <span className="capitalize text-gray-600">{day}</span>
                           <span>{hours}</span>
                         </div>
                       ))}
                     </div>
-                    
+
                     {doctor.doctorAbsences && doctor.doctorAbsences.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <h3 className="font-medium mb-2 text-red-600">Upcoming Time Off</h3>
                         <div className="text-sm space-y-2">
                           {doctor.doctorAbsences.map((absence) => (
                             <div key={absence.id} className="flex justify-between">
-                              <span className="text-gray-600">{absence.startDate === absence.endDate ? 
-                                absence.startDate : 
+                              <span className="text-gray-600">{absence.startDate === absence.endDate ?
+                                absence.startDate :
                                 `${absence.startDate} - ${absence.endDate}`}</span>
                               <span className="text-red-600">Not Available</span>
                             </div>
@@ -327,17 +338,17 @@ const DoctorDetail = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Booking Appointment Dialog */}
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Book Appointment with {doctor.name}</DialogTitle>
+            <DialogTitle>Book Appointment with {doctor.user?.name}</DialogTitle>
             <DialogDescription>
               Fill in the details below to schedule your appointment.
             </DialogDescription>
           </DialogHeader>
-          
+
           <form onSubmit={handleBookAppointment}>
             <div className="grid gap-4 py-4">
               {isAuthenticated && (
@@ -379,7 +390,7 @@ const DoctorDetail = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label htmlFor="patientEmail" className="text-sm font-medium">
                         Email
@@ -393,7 +404,7 @@ const DoctorDetail = () => {
                         required
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <label htmlFor="patientPhone" className="text-sm font-medium">
                         Phone Number
@@ -431,7 +442,7 @@ const DoctorDetail = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
@@ -458,10 +469,10 @@ const DoctorDetail = () => {
                         disabled={(date) => {
                           const today = new Date();
                           today.setHours(0, 0, 0, 0);
-                          
+
                           // Check if date is in the past
                           if (date < today) return true;
-                          
+
                           // Check if the doctor has any absences during this date
                           if (doctor.doctorAbsences) {
                             const isAbsent = doctor.doctorAbsences.some(absence => {
@@ -469,17 +480,17 @@ const DoctorDetail = () => {
                               const absenceEnd = new Date(absence.endDate);
                               absenceStart.setHours(0, 0, 0, 0);
                               absenceEnd.setHours(23, 59, 59, 999);
-                              
+
                               return date >= absenceStart && date <= absenceEnd;
                             });
-                            
+
                             if (isAbsent) return true;
                           }
-                          
+
                           // Check if doctor works on this day of the week
                           const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
                           const hasDayAvailability = doctor.doctorAvailabilities?.some(a => a.dayOfWeek === dayOfWeek);
-                          
+
                           return !hasDayAvailability;
                         }}
                         initialFocus
@@ -488,7 +499,7 @@ const DoctorDetail = () => {
                     </PopoverContent>
                   </Popover>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
                     Appointment Time
@@ -524,7 +535,7 @@ const DoctorDetail = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <label htmlFor="reason" className="text-sm font-medium">
                   Reason for Visit
@@ -538,17 +549,17 @@ const DoctorDetail = () => {
                 />
               </div>
             </div>
-            
+
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setIsBookingModalOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={!selectedDate || !selectedTime || isSubmitting}
               >

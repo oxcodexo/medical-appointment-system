@@ -3,9 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, createBrowserRouter, RouterProvider } from "react-router-dom";
+import { UNSAFE_DataRouterContext, UNSAFE_DataRouterStateContext, UNSAFE_NavigationContext, UNSAFE_LocationContext, UNSAFE_RouteContext } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext/provider";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Home from "@/pages/Home";
@@ -16,12 +19,31 @@ import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import About from "@/pages/About";
 import NotFound from "@/pages/NotFound";
+import UnauthorizedPage from "@/pages/Unauthorized";
 
 const queryClient = new QueryClient();
+
+// Enable React Router v7 future flags to suppress warnings
+// This is a temporary solution until we migrate to React Router v7
+const enableFutureFlags = () => {
+  window.history.pushState = new Proxy(window.history.pushState, {
+    apply: (target, thisArg, argArray) => {
+      // Add state object if it's missing (React Router v7 expectation)
+      if (argArray.length < 3 || argArray[0] === null || argArray[0] === undefined) {
+        argArray[0] = {};
+      }
+      return target.apply(thisArg, argArray);
+    },
+  });
+};
+
+// Call the function to enable future flags
+enableFutureFlags();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      {/* <NotificationProvider> */}
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -30,13 +52,42 @@ const App = () => (
             <Navbar />
             <main className="flex-grow">
               <Routes>
+                {/* Public routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/doctors" element={<DoctorsList />} />
                 <Route path="/doctors/:id" element={<DoctorDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+                {/* Protected routes - require authentication */}
+                <Route path="/dashboard" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } />
+
+                {/* Admin routes - require specific permissions */}
+                <Route path="/admin/users" element={
+                  <ProtectedRoute permissionName="user:view_all">
+                    <div>User Management</div>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/admin/doctors" element={
+                  <ProtectedRoute permissionName="doctor:view_all">
+                    <div>Doctor Management</div>
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/admin/permissions" element={
+                  <ProtectedRoute permissionName="template:view">
+                    <div>Permission Management</div>
+                  </ProtectedRoute>
+                } />
+
+                {/* Catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
@@ -44,6 +95,7 @@ const App = () => (
           </div>
         </BrowserRouter>
       </TooltipProvider>
+      {/* </NotificationProvider> */}
     </AuthProvider>
   </QueryClientProvider>
 );

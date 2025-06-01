@@ -19,24 +19,24 @@ const AdminProfile = () => {
     role: user?.role || 'admin',
   });
   const { toast } = useToast();
-  
+
   const handleChange = (field: string, value: string) => {
     setProfile({ ...profile, [field]: value });
   };
-  
+
   const handleSave = () => {
     // In a real app, this would call an API to save
     console.log('Saving profile:', profile);
-    
+
     // Update UI
     setIsEditMode(false);
-    
+
     toast({
       title: "Profile updated",
       description: "Your profile information has been saved."
     });
   };
-  
+
   const handleCancel = () => {
     // Revert changes
     setProfile({
@@ -47,7 +47,7 @@ const AdminProfile = () => {
     });
     setIsEditMode(false);
   };
-  
+
   return (
     <Card>
       <CardHeader>
@@ -101,7 +101,7 @@ const AdminProfile = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -119,7 +119,7 @@ const AdminProfile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 {isEditMode ? (
@@ -136,7 +136,7 @@ const AdminProfile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 {isEditMode ? (
@@ -153,7 +153,7 @@ const AdminProfile = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <div className="flex items-center border px-3 py-2 rounded-md bg-gray-50">
@@ -161,7 +161,7 @@ const AdminProfile = () => {
                   <span className="capitalize">{profile.role}</span>
                 </div>
               </div>
-              
+
               {isEditMode && (
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="current-password">Current Password</Label>

@@ -5,16 +5,16 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
       autoIncrement: true
     },
-    name: {
-      type: Sequelize.STRING,
-      allowNull: false
-    },
     specialtyId: {
       type: Sequelize.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'specialties',
+        key: 'id'
+      }
     },
     image: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(255),
       allowNull: true,
       defaultValue: '/placeholder.svg'
     },
@@ -23,8 +23,16 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: true
     },
     experience: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(100),
       allowNull: true
+    },
+    yearsOfExperience: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+      validate: {
+        min: 0,
+        max: 70
+      }
     },
     rating: {
       type: Sequelize.FLOAT,
@@ -35,18 +43,46 @@ module.exports = (sequelize, Sequelize) => {
         max: 5
       }
     },
-    email: {
-      type: Sequelize.STRING,
+    reviewCount: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+      validate: {
+        min: 0
+      }
+    },
+    officeAddress: {
+      type: Sequelize.STRING(255),
       allowNull: true
     },
-    phone: {
-      type: Sequelize.STRING,
+    officeHours: {
+      type: Sequelize.STRING(255),
       allowNull: true
+    },
+    acceptingNewPatients: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+    languages: {
+      type: Sequelize.STRING(255),
+      allowNull: true,
+      get() {
+        const value = this.getDataValue('languages');
+        return value ? value.split(',') : [];
+      },
+      set(val) {
+        this.setDataValue('languages', val.join(','));
+      }
     },
     userId: {
       type: Sequelize.INTEGER,
-      allowNull: true,
-      unique: true
+      allowNull: false,
+      unique: true,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
     }
   }, {
     timestamps: true

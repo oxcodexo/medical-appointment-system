@@ -148,6 +148,9 @@ export const doctorApi = {
   getByUserId: (userId: number) => {
     return api.get(`/doctors/user/${userId}`);
   },
+  getManagedByUser: (managerId: number) => {
+    return api.get(`/doctors/managed-by/${managerId}`);
+  },
   getAvailability: (doctorId: number) => {
     return api.get(`/doctors/${doctorId}/availability`);
   },

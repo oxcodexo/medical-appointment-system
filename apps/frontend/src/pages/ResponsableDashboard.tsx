@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { appointmentApi, doctorApi } from '@/lib/api';
-import { Appointment, Doctor } from '@/lib/types';
+import { doctorService } from '@/services/doctor.service';
+import { appointmentService } from '@/services/appointment.service';
+import { Appointment, Doctor, AppointmentStatus } from '@medical-appointment-system/shared-types';
 import {
   Card,
   CardContent,
@@ -41,55 +41,54 @@ const ResponsableDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      if (!user || user.role !== 'responsable') return;
       try {
-        if (!user || user.role !== 'responsable' || !user.doctorId) return;
-        
-        // Fetch the doctor info
-        const doctorResponse = await doctorApi.getById(user.doctorId);
-        if (doctorResponse.data) {
-          setDoctor(doctorResponse.data);
-          
-          // Fetch appointments for this doctor
-          const appointmentsResponse = await appointmentApi.getByDoctor(doctorResponse.data.id);
-          setAppointments(appointmentsResponse.data);
+        const managedDoctors = await doctorService.getDoctorsManagedByUser(user.id);
+        if (managedDoctors && managedDoctors.length > 0) {
+          const managedDoctor = managedDoctors[0];
+          setDoctor(managedDoctor);
+
+          const appointmentsData = await appointmentService.getAppointmentsByDoctor(managedDoctor.id);
+          setAppointments(appointmentsData);
         }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+      } catch (doctorError) {
+        console.error('Error fetching managed doctors:', doctorError);
         toast({
           title: "Error",
-          description: "Failed to load dashboard data",
+          description: "Failed to load managed doctor data",
           variant: "destructive"
         });
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, [user, toast]);
-  
-  const handleStatusChange = async (appointmentId: number, newStatus: Appointment['status']) => {
+
+  const handleStatusChange = async (appointmentId: number, newStatus: AppointmentStatus) => {
     try {
-      let response;
-      if (newStatus === 'canceled') {
-        response = await appointmentApi.cancel(appointmentId);
+      let updatedAppointment;
+      if (newStatus === AppointmentStatus.CANCELED) {
+        updatedAppointment = await appointmentService.cancelAppointment(appointmentId, 'Canceled by responsable');
       } else {
-        response = await appointmentApi.updateStatus(appointmentId, newStatus);
+        updatedAppointment = await appointmentService.updateAppointmentStatus(appointmentId, newStatus);
       }
-      
-      if (response.data) {
+
+      if (updatedAppointment) {
         // Update the local state
-        setAppointments(appointments.map(appointment => 
-          appointment.id === appointmentId ? response.data : appointment
+        setAppointments(appointments.map(appointment =>
+          appointment.id === appointmentId ? updatedAppointment : appointment
         ));
-        
+
         toast({
           title: "Status updated",
           description: `Appointment status changed to ${newStatus}.`,
@@ -104,46 +103,74 @@ const ResponsableDashboard = () => {
       });
     }
   };
-  
-  const getStatusBadgeVariant = (status: string) => {
+
+  const getStatusBadgeVariant = (status: AppointmentStatus) => {
     switch (status) {
-      case 'confirmed':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Confirmed</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pending</Badge>;
-      case 'completed':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Completed</Badge>;
-      case 'canceled':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Canceled</Badge>;
+      case AppointmentStatus.PENDING:
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">Pending</Badge>;
+      case AppointmentStatus.CONFIRMED:
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">Confirmed</Badge>;
+      case AppointmentStatus.COMPLETED:
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">Completed</Badge>;
+      case AppointmentStatus.CANCELED:
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">Canceled</Badge>;
+      case AppointmentStatus.NO_SHOW:
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">No Show</Badge>;
+      case AppointmentStatus.REJECTED:
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
   const getPendingCount = () => {
-    return appointments.filter(a => a.status === 'pending').length;
+    return appointments.filter(a => a.status === AppointmentStatus.PENDING).length;
   };
-  
+
   const getConfirmedCount = () => {
-    return appointments.filter(a => a.status === 'confirmed').length;
+    return appointments.filter(a => a.status === AppointmentStatus.CONFIRMED).length;
   };
-  
+
   const getCompletedCount = () => {
-    return appointments.filter(a => a.status === 'completed').length;
+    return appointments.filter(a => a.status === AppointmentStatus.COMPLETED).length;
   };
-  
-  const filteredAppointments = appointments
-    .filter(appointment => {
-      if (statusFilter === 'all') return true;
-      return appointment.status === statusFilter;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.time}`);
-      const dateB = new Date(`${b.date}T${b.time}`);
-      return dateA.getTime() - dateB.getTime();
-    });
-  
-  if (!user || user.role !== 'responsable' || !user.doctorId) {
+
+  const handleRestoreAppointment = async (appointmentId: number) => {
+    try {
+      const updatedAppointment = await appointmentService.restoreAppointment(appointmentId);
+      setAppointments(appointments.map(appointment =>
+        appointment.id === appointmentId ? updatedAppointment : appointment
+      ));
+      toast({
+        title: "Appointment Restored",
+        description: "The appointment has been restored to pending status."
+      });
+    } catch (error) {
+      console.error('Error restoring appointment:', error);
+      toast({
+        title: "Error restoring appointment",
+        description: "There was a problem restoring the appointment.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const _filteredAppointments = appointments
+      .filter(appointment => {
+        if (statusFilter === 'all') return true;
+        return appointment.status === statusFilter;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.time}`);
+        const dateB = new Date(`${b.date}T${b.time}`);
+        return dateA.getTime() - dateB.getTime();
+      });
+    setFilteredAppointments(_filteredAppointments);
+  }, [appointments, statusFilter]);
+
+
+  if (!user || user.role !== 'responsable') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -153,17 +180,48 @@ const ResponsableDashboard = () => {
       </div>
     );
   }
-  
+
+  // If no doctor is assigned to this manager yet, show a setup screen
+  if (!doctor) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Doctor Manager Dashboard</h1>
+            <p className="text-gray-600 mt-1">Welcome to your dashboard</p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Account Setup Required</CardTitle>
+              <CardDescription>
+                Your account needs to be linked to a doctor profile before you can manage appointments.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="mb-4">Please contact an administrator to assign you to a doctor profile.</p>
+                <Button variant="outline" onClick={() => { }}>
+                  Request Doctor Assignment
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Doctor Manager Dashboard</h1>
           {doctor && (
-            <p className="text-gray-600 mt-1">Managing appointments for {doctor.name}</p>
+            <p className="text-gray-600 mt-1">Managing appointments for {doctor.user?.name}</p>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -177,7 +235,7 @@ const ResponsableDashboard = () => {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-md font-medium">Confirmed Appointments</CardTitle>
@@ -188,7 +246,7 @@ const ResponsableDashboard = () => {
               <p className="text-xs text-muted-foreground">Upcoming appointments</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-md font-medium">Completed</CardTitle>
@@ -200,26 +258,28 @@ const ResponsableDashboard = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Manage Appointments</CardTitle>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by Status" />
+                  <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="all">All Appointments</SelectItem>
+                  <SelectItem value={AppointmentStatus.PENDING}>Pending</SelectItem>
+                  <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmed</SelectItem>
+                  <SelectItem value={AppointmentStatus.COMPLETED}>Completed</SelectItem>
+                  <SelectItem value={AppointmentStatus.CANCELED}>Canceled</SelectItem>
+                  <SelectItem value={AppointmentStatus.NO_SHOW}>No Show</SelectItem>
+                  <SelectItem value={AppointmentStatus.REJECTED}>Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <CardDescription>
-              View and manage all appointments for {doctor?.name}.
+              View and manage all appointments for {doctor?.user?.name}.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -232,7 +292,8 @@ const ResponsableDashboard = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Patient</TableHead>
-                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Time</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Reason</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -242,16 +303,18 @@ const ResponsableDashboard = () => {
                   {filteredAppointments.map((appointment) => (
                     <TableRow key={appointment.id}>
                       <TableCell className="font-medium">
-                        <div>
-                          <div>{appointment.patientName}</div>
-                          <div className="text-xs text-gray-500">{appointment.patientEmail}</div>
-                          <div className="text-xs text-gray-500">{appointment.patientPhone}</div>
+                        {appointment.patientName || (appointment.user && appointment.user.name) || 'Unknown'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                          {format(parseISO(appointment.date), 'MMM dd, yyyy')}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span>{appointment.date}</span>
-                          <span className="text-xs text-gray-500">{appointment.time}</span>
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1 text-gray-500" />
+                          {appointment.time}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -263,34 +326,34 @@ const ResponsableDashboard = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {appointment.status === 'pending' ? (
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline"
-                              size="sm"
-                              className="text-green-500 hover:text-green-700"
-                              onClick={() => handleStatusChange(appointment.id, 'confirmed')}
-                            >
-                              <Check className="h-4 w-4 mr-1" />
-                              Confirm
-                            </Button>
-                            <Button 
-                              variant="outline"
-                              size="sm"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => handleStatusChange(appointment.id, 'canceled')}
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Cancel
-                            </Button>
-                          </div>
-                        ) : appointment.status === 'confirmed' ? (
+                        {appointment.status === AppointmentStatus.PENDING ? (
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"
                               className="text-green-500 hover:text-green-700"
-                              onClick={() => handleStatusChange(appointment.id, 'completed')}
+                              onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CONFIRMED)}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Confirm
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700"
+                              onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CANCELED)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : appointment.status === AppointmentStatus.CONFIRMED ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-500 hover:text-green-700"
+                              onClick={() => handleStatusChange(appointment.id, AppointmentStatus.COMPLETED)}
                             >
                               <Check className="h-4 w-4 mr-1" />
                               Complete
@@ -299,7 +362,7 @@ const ResponsableDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="text-red-500 hover:text-red-700"
-                              onClick={() => handleStatusChange(appointment.id, 'canceled')}
+                              onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CANCELED)}
                             >
                               <X className="h-4 w-4 mr-1" />
                               Cancel
@@ -313,9 +376,9 @@ const ResponsableDashboard = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {}}>View Details</DropdownMenuItem>
-                              {appointment.status === 'canceled' && (
-                                <DropdownMenuItem onClick={() => handleStatusChange(appointment.id, 'pending')}>
+                              <DropdownMenuItem onClick={() => { }}>View Details</DropdownMenuItem>
+                              {appointment.status === AppointmentStatus.CANCELED && (
+                                <DropdownMenuItem onClick={() => handleRestoreAppointment(appointment.id)}>
                                   Restore to Pending
                                 </DropdownMenuItem>
                               )}
@@ -340,4 +403,3 @@ const ResponsableDashboard = () => {
 };
 
 export default ResponsableDashboard;
-

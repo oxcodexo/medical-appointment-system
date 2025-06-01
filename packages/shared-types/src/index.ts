@@ -1,36 +1,42 @@
 // Common types shared between frontend and backend
 
+// Export permission constants
+export * from './constants/permissions';
+
+// Export appointment types
+export * from './types/appointment';
+
+// Export doctor types
+export * from './types/doctor';
+
 // User types
 export interface User {
   id: number;
   email: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   role: UserRole;
+  phone?: string;
+  address?: string;
+  status?: UserStatus;
+  lastLogin?: string;
+  emailVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  image?: string;
 }
 
 export enum UserRole {
   PATIENT = 'patient',
   DOCTOR = 'doctor',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
+  RESPONSABLE = 'responsable'
 }
 
-// Appointment types
-export interface Appointment {
-  id: number;
-  patientId: number;
-  doctorId: number;
-  date: string;
-  time: string;
-  status: AppointmentStatus;
-  notes?: string;
-}
-
-export enum AppointmentStatus {
-  SCHEDULED = 'scheduled',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  NO_SHOW = 'no_show'
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  SUSPENDED = 'suspended'
 }
 
 // API response types
@@ -38,4 +44,10 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+// API error types
+export interface ApiError {
+  message: string;
+  status?: number;
 }

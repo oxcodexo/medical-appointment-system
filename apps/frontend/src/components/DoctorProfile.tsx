@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Doctor } from '@/lib/types';
+import { Doctor, DoctorData, User } from '@medical-appointment-system/shared-types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { doctorApi } from '@/lib/api';
+import { doctorService } from '@/services/doctor.service';
 import {
   Select,
   SelectContent,
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { User, Mail, Phone, MapPin, Edit, Save, X } from 'lucide-react';
+import { User as UserIcon, Mail, Phone, MapPin, Edit, Save, X } from 'lucide-react';
 
 interface DoctorProfileProps {
   doctor: Doctor;
@@ -26,49 +26,66 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [profile, setProfile] = useState<Doctor>({ ...doctor });
   const { toast } = useToast();
-  
-  const handleChange = (field: keyof Doctor, value: string) => {
+
+  // Handle changes to doctor fields
+  const handleChange = (field: keyof DoctorData, value: string) => {
     setProfile({ ...profile, [field]: value });
   };
-  
+
+  // Handle changes to user fields
+  const handleUserChange = (field: keyof User, value: string) => {
+    setProfile({
+      ...profile,
+      user: { ...profile.user, [field]: value }
+    });
+  };
+
   const handleSave = async () => {
     try {
-      // Save to backend with field names matching the backend model
-      const response = await doctorApi.update(doctor.id, {
-        userId: profile.userId,
-        specialtyId: profile.specialty?.id,
-        bio: profile.bio, // Changed from biography to bio to match model
-        experience: profile.experience, // Keep as string to match model
-        name: profile.name, // Add name field
-        email: profile.email, // Add email field
-        phone: profile.phone, // Add phone field
+      // Prepare doctor data according to the shared types
+      // Only include the fields that should be updated
+      const doctorData: Partial<Doctor> = {
+        // Doctor-specific fields
+        specialtyId: profile.specialtyId,
+        experience: profile.experience,
+        bio: profile.bio,
+        // User-related fields
+        user: {
+          ...profile.user,
+          name: profile.user?.name,
+          email: profile.user?.email,
+          phone: profile.user?.phone,
+        }
+      };
+
+      // Update using the service
+      const updatedDoctor = await doctorService.updateDoctor(doctor.id, doctorData);
+      console.log(" updatedDoctor ", updatedDoctor);
+
+      // Update UI with the returned data
+      setProfile(updatedDoctor);
+      setIsEditMode(false);
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been saved."
       });
-      
-      if (response.data) {
-        // Update UI
-        setIsEditMode(false);
-        
-        toast({
-          title: "Profile updated",
-          description: "Your profile information has been saved."
-        });
-      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Error updating profile",
-        description: "There was a problem saving your profile information.",
+        title: "Error",
+        description: "Failed to update profile information.",
         variant: "destructive"
       });
     }
   };
-  
+
   const handleCancel = () => {
     // Revert changes
     setProfile({ ...doctor });
     setIsEditMode(false);
   };
-  
+
   return (
     <div className="grid grid-cols-1 gap-6">
       <Card>
@@ -102,8 +119,8 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={profile.image || '/placeholder.svg'} alt={profile.name} />
-                  <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={profile.user?.image || '/placeholder.svg'} alt={profile.user?.name || 'Doctor'} />
+                  <AvatarFallback>{profile.user?.name ? profile.user.name.charAt(0) : 'D'}</AvatarFallback>
                 </Avatar>
                 {isEditMode && (
                   <Button
@@ -116,11 +133,11 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 )}
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-lg">{profile.name}</h3>
+                <h3 className="font-semibold text-lg">{profile.user?.name}</h3>
                 <p className="text-sm text-gray-500">{profile.specialty?.name}</p>
               </div>
             </div>
-            
+
             <div className="flex-1 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -128,23 +145,23 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                   {isEditMode ? (
                     <Input
                       id="name"
-                      value={profile.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
+                      value={profile.user?.name || ''}
+                      onChange={(e) => handleUserChange('name', e.target.value)}
                     />
                   ) : (
                     <div className="flex items-center border px-3 py-2 rounded-md bg-gray-50">
-                      <User className="h-4 w-4 text-gray-400 mr-2" />
-                      {profile.name}
+                      <UserIcon className="h-4 w-4 text-gray-400 mr-2" />
+                      {profile.user?.name || 'No name provided'}
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="specialty">Specialty</Label>
                   {isEditMode ? (
                     <Select
                       value={profile.specialty?.name}
-                      onValueChange={(value) => handleChange('specialty', value)}
+                      onValueChange={(value) => handleChange('specialtyId', value)}
                     >
                       <SelectTrigger id="specialty">
                         <SelectValue placeholder="Select specialty" />
@@ -168,41 +185,41 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   {isEditMode ? (
                     <Input
                       id="email"
                       type="email"
-                      value={profile.email || ''}
-                      onChange={(e) => handleChange('email', e.target.value)}
+                      value={profile.user?.email || ''}
+                      onChange={(e) => handleUserChange('email', e.target.value)}
                     />
                   ) : (
                     <div className="flex items-center border px-3 py-2 rounded-md bg-gray-50">
                       <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                      {profile.email || 'No email provided'}
+                      {profile.user?.email || 'No email provided'}
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
                   {isEditMode ? (
                     <Input
                       id="phone"
                       type="tel"
-                      value={profile.phone || ''}
-                      onChange={(e) => handleChange('phone', e.target.value)}
+                      value={profile.user?.phone || ''}
+                      onChange={(e) => handleUserChange('phone', e.target.value)}
                     />
                   ) : (
                     <div className="flex items-center border px-3 py-2 rounded-md bg-gray-50">
                       <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                      {profile.phone || 'No phone number provided'}
+                      {profile.user?.phone || 'No phone number provided'}
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="experience">Years of Experience</Label>
                   {isEditMode ? (
@@ -217,7 +234,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="bio">Professional Bio</Label>
                   {isEditMode ? (

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +17,26 @@ const Login = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!email.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!password) {
+      toast({
+        title: "Password required",
+        description: "Please enter your password.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -36,9 +57,13 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
+      
+      // Provide more specific error messages based on error type
+      const errorMessage = error instanceof Error ? error.message : "An error occurred. Please try again.";
+      
       toast({
         title: "Login failed",
-        description: "An error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -97,6 +122,8 @@ const Login = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  placeholder="your.email@example.com"
                 />
               </div>
             </div>
@@ -114,6 +141,8 @@ const Login = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  placeholder="••••••••"
                 />
               </div>
             </div>
@@ -134,10 +163,12 @@ const Login = () => {
               >
                 {isLoading ? (
                   <>
-                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Logging in...
                   </>
-                ) : "Log in"}
+                ) : (
+                  'Sign in'
+                )}
               </Button>
             </div>
           </form>

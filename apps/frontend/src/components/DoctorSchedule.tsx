@@ -1,14 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { Doctor, DoctorAvailability, DoctorAbsence } from '@/lib/types';
+import { Doctor, DoctorAvailability, DoctorAbsence } from '@medical-appointment-system/shared-types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { format, addDays, isBefore, isAfter, parse } from 'date-fns';
-import { Calendar as CalendarIcon, Clock, Plus, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { format, isBefore, isAfter } from 'date-fns';
+import { Plus, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -18,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { doctorApi } from '@/lib/api';
+import { doctorService } from '@/services/doctor.service';
 
 interface DoctorScheduleProps {
   doctor: Doctor;
@@ -40,8 +39,8 @@ const days = [
 ] as const;
 
 const timeOptions = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', 
-  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', 
+  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
   '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'
 ];
 
@@ -67,156 +66,156 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
     to: undefined
   });
   const [absenceReason, setAbsenceReason] = useState('');
-  
+
   const { toast } = useToast();
-  
+
   useEffect(() => {
     setAvailability(doctor.doctorAvailabilities || []);
     setAbsences(doctor.doctorAbsences || []);
   }, [doctor]);
-  
+
   const saveAvailability = async () => {
     if (!selectedDay || !selectedTimeSlot.startTime || !selectedTimeSlot.endTime) {
       toast({
         title: "Missing information",
-        description: "Please select a day and time range",
+        description: "Please select a day and time slot.",
         variant: "destructive"
       });
       return;
     }
-    
+
     try {
-      // Save to the backend
-      await doctorApi.setAvailability(
+      // Save to the backend using the service
+      await doctorService.setDoctorAvailability(
         doctor.id,
         selectedDay,
         selectedTimeSlot.startTime,
         selectedTimeSlot.endTime
       );
-      
+
       // Get fresh availability data after update
-      const availabilityResponse = await doctorApi.getAvailability(doctor.id);
-      setAvailability(availabilityResponse.data);
+      const updatedAvailability = await doctorService.getDoctorAvailability(doctor.id);
+      setAvailability(updatedAvailability);
       setIsAddingAvailability(false);
-      
+      setSelectedDay('monday');
+      setSelectedTimeSlot({ startTime: '09:00', endTime: '17:00' });
+
       toast({
         title: "Schedule updated",
         description: `Your availability for ${selectedDay} has been updated.`
       });
     } catch (error) {
-      console.error("Error saving availability:", error);
+      console.error('Error updating availability:', error);
       toast({
-        title: "Error saving schedule",
-        description: "There was an error saving your availability.",
+        title: "Error",
+        description: "Failed to update availability.",
         variant: "destructive"
       });
     }
   };
-  
+
   const saveAbsence = async () => {
     if (!absenceDate.from || !absenceDate.to || !absenceReason) {
       toast({
         title: "Missing information",
-        description: "Please select dates and provide a reason",
+        description: "Please select dates and provide a reason.",
         variant: "destructive"
       });
       return;
     }
-    
+
     try {
       // Format dates to string format
       const startDate = format(absenceDate.from, 'yyyy-MM-dd');
       const endDate = format(absenceDate.to, 'yyyy-MM-dd');
-      
-      // Save to the backend
-      await doctorApi.addAbsence(
+
+      // Save to the backend using the service
+      await doctorService.addDoctorAbsence(
         doctor.id,
         startDate,
         endDate,
         absenceReason
       );
-      
-      // Get fresh absences data directly from the getAbsences endpoint
-      const absencesResponse = await doctorApi.getAbsences(doctor.id);
-      if (absencesResponse.data) {
-        setAbsences(absencesResponse.data);
-        setIsAddingAbsence(false);
-        setAbsenceDate({ from: undefined, to: undefined });
-        setAbsenceReason('');
-        
-        toast({
-          title: "Absence scheduled",
-          description: `Your absence has been scheduled.`
-        });
-      }
-    } catch (error) {
-      console.error("Error scheduling absence:", error);
+
+      // Get fresh absences data using the service
+      const updatedAbsences = await doctorService.getDoctorAbsences(doctor.id);
+      setAbsences(updatedAbsences);
+      setIsAddingAbsence(false);
+      setAbsenceDate({ from: undefined, to: undefined });
+      setAbsenceReason('');
+
       toast({
-        title: "Error scheduling absence",
-        description: "There was an error scheduling your absence.",
+        title: "Absence scheduled",
+        description: `Your absence has been scheduled.`
+      });
+    } catch (error) {
+      console.error('Error scheduling absence:', error);
+      toast({
+        title: "Error",
+        description: "Failed to schedule absence.",
         variant: "destructive"
       });
     }
   };
-  
+
   const deleteAvailability = async (dayOfWeek: string) => {
     try {
-      await doctorApi.removeAvailability(doctor.id, dayOfWeek);
-      
+      await doctorService.removeDoctorAvailability(doctor.id, dayOfWeek);
+
       // Update local state
       setAvailability(availability.filter(a => a.dayOfWeek !== dayOfWeek));
-      
+
       toast({
         title: "Availability removed",
         description: `Your availability for ${dayOfWeek} has been removed.`
       });
     } catch (error) {
-      console.error("Error removing availability:", error);
+      console.error('Error removing availability:', error);
       toast({
-        title: "Error removing availability",
-        description: "There was an error removing your availability.",
+        title: "Error",
+        description: "Failed to remove availability.",
         variant: "destructive"
       });
     }
   };
-  
+
   const deleteAbsence = async (absenceId: number) => {
     try {
-      await doctorApi.removeAbsence(doctor.id, absenceId);
-      
+      await doctorService.removeDoctorAbsence(doctor.id, absenceId);
+
       // Update local state
       setAbsences(absences.filter(a => a.id !== absenceId));
-      
+
       toast({
         title: "Absence removed",
         description: `The selected absence has been removed.`
       });
     } catch (error) {
-      console.error("Error removing absence:", error);
+      console.error('Error removing absence:', error);
       toast({
-        title: "Error removing absence",
-        description: "There was an error removing the absence.",
+        title: "Error",
+        description: "Failed to remove absence.",
         variant: "destructive"
       });
     }
   };
-  
+
   const getAvailabilityForDay = (day: string) => {
     return availability.find(a => a.dayOfWeek === day);
   };
-  
+
   const isTimeValid = (start: string, end: string) => {
     const startHour = parseInt(start.split(':')[0]);
     const startMinute = parseInt(start.split(':')[1]);
     const endHour = parseInt(end.split(':')[0]);
     const endMinute = parseInt(end.split(':')[1]);
-    
+
     if (endHour < startHour) return false;
     if (endHour === startHour && endMinute <= startMinute) return false;
-    
+
     return true;
   };
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
@@ -261,7 +260,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -282,8 +281,8 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 <div key={absence.id} className="flex items-center justify-between px-4 py-3 border rounded-md">
                   <div>
                     <div className="font-medium">
-                      {absence.startDate === absence.endDate ? 
-                        absence.startDate : 
+                      {absence.startDate === absence.endDate ?
+                        absence.startDate :
                         `${absence.startDate} - ${absence.endDate}`}
                     </div>
                     <div className="text-sm text-gray-500">{absence.reason}</div>
@@ -301,7 +300,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Dialog for adding availability */}
       <Dialog open={isAddingAvailability} onOpenChange={setIsAddingAvailability}>
         <DialogContent>
@@ -324,12 +323,12 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Start Time</label>
-                <Select 
-                  value={selectedTimeSlot.startTime} 
+                <Select
+                  value={selectedTimeSlot.startTime}
                   onValueChange={(value) => setSelectedTimeSlot({
                     ...selectedTimeSlot,
                     startTime: value
@@ -347,11 +346,11 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">End Time</label>
-                <Select 
-                  value={selectedTimeSlot.endTime} 
+                <Select
+                  value={selectedTimeSlot.endTime}
                   onValueChange={(value) => setSelectedTimeSlot({
                     ...selectedTimeSlot,
                     endTime: value
@@ -370,7 +369,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 </Select>
               </div>
             </div>
-            
+
             {!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime) && (
               <p className="text-sm text-red-500">End time must be after start time</p>
             )}
@@ -379,7 +378,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             <Button variant="outline" onClick={() => setIsAddingAvailability(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={saveAvailability}
               disabled={!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime)}
             >
@@ -388,7 +387,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       {/* Dialog for adding absence */}
       <Dialog open={isAddingAbsence} onOpenChange={setIsAddingAbsence}>
         <DialogContent>
@@ -409,16 +408,16 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                   disabled={(date) => {
                     // Disable past dates
                     if (isBefore(date, new Date())) return true;
-                    
+
                     // Disable dates that are already covered by existing absences
                     const dateStr = format(date, 'yyyy-MM-dd');
                     return absences.some(absence => {
                       const startDate = absence.startDate;
                       const endDate = absence.endDate;
-                      
+
                       // Check if the date is within any existing absence period
                       return (
-                        !isBefore(dateStr, startDate) && 
+                        !isBefore(dateStr, startDate) &&
                         !isAfter(dateStr, endDate)
                       );
                     });
@@ -428,11 +427,11 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Reason</label>
-              <Textarea 
-                placeholder="Reason for absence" 
+              <Textarea
+                placeholder="Reason for absence"
                 value={absenceReason}
                 onChange={(e) => setAbsenceReason(e.target.value)}
               />
@@ -442,7 +441,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             <Button variant="outline" onClick={() => setIsAddingAbsence(false)}>
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={saveAbsence}
               disabled={!absenceDate.from || !absenceDate.to || !absenceReason}
             >

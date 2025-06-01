@@ -36,14 +36,25 @@ db.doctorAbsence = require("./doctorAbsence.model.js")(sequelize, Sequelize);
 db.medicalDossier = require("./medicalDossier.model.js")(sequelize, Sequelize);
 db.medicalHistoryEntry = require("./medicalHistoryEntry.model.js")(sequelize, Sequelize);
 db.userProfile = require("./userProfile.model.js")(sequelize, Sequelize);
+db.review = require("./review.model.js")(sequelize, Sequelize);
+db.doctorManager = require("./doctorManager.model.js")(sequelize, Sequelize);
+
+// Security models
+db.permission = require("./permission.model.js")(sequelize, Sequelize);
+db.rolePermission = require("./rolePermission.model.js")(sequelize, Sequelize);
+db.userPermission = require("./userPermission.model.js")(sequelize, Sequelize);
+
+// Notification models
+db.notification = require("./notification.model.js")(sequelize, Sequelize);
+db.notificationTemplate = require("./notificationTemplate.model.js")(sequelize, Sequelize);
 
 // Define relationships
 // User-Doctor relationship (one-to-one)
-db.user.hasOne(db.doctor, { foreignKey: 'userId' });
+db.user.hasOne(db.doctor, { foreignKey: 'userId', as: 'doctorProfile' });
 db.doctor.belongsTo(db.user, { foreignKey: 'userId' });
 
 // User-UserProfile relationship (one-to-one)
-db.user.hasOne(db.userProfile, { foreignKey: 'userId' });
+db.user.hasOne(db.userProfile, { foreignKey: 'userId', as: 'userProfile' });
 db.userProfile.belongsTo(db.user, { foreignKey: 'userId' });
 
 // Doctor-Specialty relationship (many-to-one)
@@ -77,5 +88,117 @@ db.medicalHistoryEntry.belongsTo(db.medicalDossier, { foreignKey: 'dossierId' })
 // Appointment-MedicalHistoryEntry relationship (one-to-one)
 db.appointment.hasOne(db.medicalHistoryEntry, { foreignKey: 'appointmentId' });
 db.medicalHistoryEntry.belongsTo(db.appointment, { foreignKey: 'appointmentId' });
+
+// Doctor-Review relationship (one-to-many)
+db.doctor.hasMany(db.review, { foreignKey: 'doctorId', as: 'reviews' });
+db.review.belongsTo(db.doctor, { foreignKey: 'doctorId' });
+
+// User-Review relationship (one-to-many)
+db.user.hasMany(db.review, { foreignKey: 'userId' });
+db.review.belongsTo(db.user, { foreignKey: 'userId' });
+
+// Appointment-Review relationship (one-to-one)
+db.appointment.hasOne(db.review, { foreignKey: 'appointmentId' });
+db.review.belongsTo(db.appointment, { foreignKey: 'appointmentId' });
+
+// Doctor-Manager relationship (many-to-many through doctorManager)
+db.doctor.belongsToMany(db.user, { 
+  through: db.doctorManager,
+  foreignKey: 'doctorId',
+  otherKey: 'managerId',
+  as: 'managers'
+});
+
+db.user.belongsToMany(db.doctor, {
+  through: db.doctorManager,
+  foreignKey: 'managerId',
+  otherKey: 'doctorId',
+  as: 'managedDoctors'
+});
+
+// Direct access to the join table
+db.doctorManager.belongsTo(db.doctor, { foreignKey: 'doctorId' });
+db.doctorManager.belongsTo(db.user, { foreignKey: 'managerId', as: 'manager' });
+db.doctor.hasMany(db.doctorManager, { foreignKey: 'doctorId' });
+db.user.hasMany(db.doctorManager, { foreignKey: 'managerId' });
+
+// Security model relationships
+db.permission.hasMany(db.rolePermission, { foreignKey: 'permissionId' });
+db.rolePermission.belongsTo(db.permission, { foreignKey: 'permissionId' });
+
+db.permission.hasMany(db.userPermission, { foreignKey: 'permissionId' });
+db.userPermission.belongsTo(db.permission, { foreignKey: 'permissionId' });
+
+db.user.hasMany(db.userPermission, { foreignKey: 'userId' });
+db.userPermission.belongsTo(db.user, { foreignKey: 'userId' });
+
+// Notification model relationships
+db.user.hasMany(db.notification, { foreignKey: 'userId', as: 'notifications' });
+db.notification.belongsTo(db.user, { foreignKey: 'userId' });
+
+db.notificationTemplate.hasMany(db.notification, { foreignKey: 'templateId' });
+db.notification.belongsTo(db.notificationTemplate, { foreignKey: 'templateId', allowNull: true });
+
+// Add hooks for data validation and consistency
+
+// Appointment validation hook
+db.appointment.beforeCreate(async (appointment, options) => {
+  // If this is not a guest booking, ensure userId is provided and validate user exists
+  if (!appointment.isGuestBooking) {
+    if (!appointment.userId) {
+      throw new Error('User ID is required for registered patient appointments');
+    }
+    
+    // For registered users, patient details are derived from user profile
+    appointment.patientName = null;
+    appointment.patientEmail = null;
+    appointment.patientPhone = null;
+  } else {
+    // For guest bookings, ensure patient details are provided
+    if (!appointment.patientName || !appointment.patientEmail || !appointment.patientPhone) {
+      throw new Error('Patient details are required for guest bookings');
+    }
+  }
+});
+
+// Doctor validation hook
+db.doctor.beforeCreate(async (doctor, options) => {
+  // Ensure the userId exists and is valid
+  if (!doctor.userId) {
+    throw new Error('User ID is required for doctor profiles');
+  }
+  
+  // Check if user exists and has the correct role
+  const user = await db.user.findByPk(doctor.userId);
+  if (!user) {
+    throw new Error('Associated user not found');
+  }
+  
+  if (user.role !== 'doctor') {
+    throw new Error('Associated user must have a doctor role');
+  }
+});
+
+// Add a method to get patient information regardless of booking type
+db.appointment.prototype.getPatientInfo = async function() {
+  if (this.isGuestBooking) {
+    return {
+      name: this.patientName,
+      email: this.patientEmail,
+      phone: this.patientPhone
+    };
+  } else if (this.userId) {
+    const user = await db.user.findByPk(this.userId);
+    if (!user) {
+      throw new Error('Associated user not found');
+    }
+    return {
+      name: user.name,
+      email: user.email,
+      phone: user.phone || ''
+    };
+  }
+  throw new Error('Invalid appointment data');
+};
 
 module.exports = db;

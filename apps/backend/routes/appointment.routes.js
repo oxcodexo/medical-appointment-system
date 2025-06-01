@@ -1,46 +1,66 @@
 const express = require('express');
 const router = express.Router();
 const appointmentController = require('../controllers/appointment.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const { authJwt } = require('../middleware');
+const permissionHelpers = require('../utils/permission-helpers');
+const { APPOINTMENT } = require('@medical-appointment-system/shared-types');
 
-// Public routes
-// Create a new appointment (anyone can book an appointment)
-router.post('/', appointmentController.create);
+// All routes require authentication
+router.use(authJwt.verifyToken);
 
-// Protected routes
-router.use(authMiddleware.verifyToken);
+// Get all appointments
+// Permission-based: Users see their own, doctors see their appointments, admins see all
+router.get('/', permissionHelpers.requirePermission(APPOINTMENT.VIEW_ALL),appointmentController.findAll);
 
-// Get all appointments (admin only)
-router.get('/', authMiddleware.isAdmin, appointmentController.findAll);
+// Create a new appointment
+// Anyone authenticated can create an appointment
+router.post('/', permissionHelpers.requirePermission(APPOINTMENT.CREATE), appointmentController.create);
 
 // Get appointment by id
-router.get('/:id', appointmentController.findOne);
+// Permission check is handled in the controller
+router.get('/:id', permissionHelpers.requirePermission(APPOINTMENT.VIEW_OWN), appointmentController.findOne);
 
-// Update appointment status (doctor or admin only)
-router.put('/:id/status', authMiddleware.isResponsable, appointmentController.updateStatus);
+// Update appointment status
+// Permission check is handled in the controller
+router.put('/:id/status', permissionHelpers.requirePermission(APPOINTMENT.UPDATE_OWN), appointmentController.updateStatus);
 
-// Update appointment (admin only)
-router.put('/:id', authMiddleware.isAdmin, appointmentController.update);
+// Update appointment details
+// Admin only
+router.put('/:id', permissionHelpers.requirePermission(APPOINTMENT.UPDATE_ALL), appointmentController.update);
 
-// Delete appointment (admin only)
-router.delete('/:id', authMiddleware.isAdmin, appointmentController.delete);
+// Delete appointment
+// Admin only
+router.delete('/:id', permissionHelpers.requirePermission(APPOINTMENT.DELETE), appointmentController.delete);
 
-// Get appointments for doctor (doctor or admin only)
-router.get('/doctor/:doctorId', authMiddleware.isResponsable, appointmentController.findByDoctor);
+// Get appointments for doctor
+// Allow doctor managers to access appointments for doctors they manage
+router.get('/doctor/:doctorId', permissionHelpers.requirePermission(APPOINTMENT.VIEW_OWN), appointmentController.findByDoctor);
 
-// Get appointments for user (user can only access their own appointments)
-router.get('/user/:userId', (req, res, next) => {
-  // Allow users to access their own appointments or admins to access any user's appointments
-  if (req.userId == req.params.userId || req.userRole === 'admin') {
-    next();
-  } else {
-    return res.status(403).json({
-      message: 'You can only access your own appointments!'
-    });
-  }
-}, appointmentController.findByUser);
+// Get appointments for user
+// Permission check is handled in the controller
+router.get('/user/:userId', permissionHelpers.requirePermission(APPOINTMENT.VIEW_OWN), appointmentController.findByUser);
 
 // Cancel appointment
-router.put('/:id/cancel', appointmentController.cancel);
+// Permission check is handled in the controller
+router.put('/:id/cancel', permissionHelpers.requirePermission(APPOINTMENT.UPDATE_OWN), appointmentController.cancel);
+
+// Restore canceled appointment
+// Permission check is handled in the controller
+router.put('/:id/restore', permissionHelpers.requirePermission(APPOINTMENT.UPDATE_OWN), appointmentController.restore);
+
+// Get upcoming appointments for the authenticated user
+router.get('/upcoming', permissionHelpers.requirePermission(APPOINTMENT.VIEW_OWN), (req, res) => {
+  req.query.userId = req.userId;
+  req.query.status = 'confirmed';
+  req.query.startDate = new Date().toISOString();
+  appointmentController.findAll(req, res);
+});
+
+// Get past appointments for the authenticated user
+router.get('/history', permissionHelpers.requirePermission(APPOINTMENT.VIEW_OWN), (req, res) => {
+  req.query.userId = req.userId;
+  req.query.endDate = new Date().toISOString();
+  appointmentController.findAll(req, res);
+});
 
 module.exports = router;
