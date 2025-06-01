@@ -3,8 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.processMessage = async (req, res) => {
   try {
-    const { message } = req.body;
-    let { sessionId } = req.body;
+    const { message,sessionId } = req.body;
     
     if (!message) {
       return res.status(400).json({ 
@@ -12,21 +11,25 @@ exports.processMessage = async (req, res) => {
         error: 'Message is required' 
       });
     }
+
+    let _sessionId = sessionId;
+
+    if (!_sessionId)
+      _sessionId = uuidv4();
+
+    console.log("sessionId2", _sessionId);
+    console.log("message", message);
     
-    if (!sessionId) {
-      sessionId = uuidv4();
-    }
-    
-    chatbot.addToConversationHistory(sessionId, message, true);
+    chatbot.addToConversationHistory(_sessionId, message, true);
     
     const responseData = await chatbot.getResponse(message);
     
-    chatbot.addToConversationHistory(sessionId, responseData.response, false);
+    chatbot.addToConversationHistory(_sessionId, responseData.response, false);
     
     return res.status(200).json({
       success: true,
       data: {
-        sessionId: sessionId,
+        sessionId: _sessionId,
         intent: responseData.intent,
         response: responseData.response,
         followUpQuestions: responseData.followUpQuestions

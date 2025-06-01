@@ -1,4 +1,6 @@
-import { ApiResponse } from '@medical-appointment-system/shared-types';
+import { AxiosResponse, AxiosError } from 'axios';
+import apiService from './api.service';
+import { ApiResponse, ApiError } from '@medical-appointment-system/shared-types';
 
 // Import chatbot types directly from the source since there seems to be an issue with the package exports
 interface ChatbotRequest {
@@ -25,7 +27,7 @@ interface ChatbotMessage {
  */
 export class ChatbotService {
   private static instance: ChatbotService;
-  private baseUrl = '/api/chatbot';
+  private baseUrl = '/chatbot';
 
   private constructor() {}
 
@@ -37,6 +39,28 @@ export class ChatbotService {
       ChatbotService.instance = new ChatbotService();
     }
     return ChatbotService.instance;
+  }
+  
+  /**
+   * Handle API errors consistently
+   */
+  private handleError(error: unknown, defaultMessage: string): ApiError {
+    let errorMessage = defaultMessage;
+    let errorStatus: number | undefined = undefined;
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    if (error instanceof AxiosError && error.response) {
+      errorMessage = error.response.data?.message as string || errorMessage;
+      errorStatus = error.response.status;
+    }
+    
+    return {
+      message: errorMessage,
+      status: errorStatus
+    };
   }
 
   /**
@@ -57,26 +81,19 @@ export class ChatbotService {
         userId: userId?.toString()
       };
 
-      const response = await fetch(`${this.baseUrl}/message`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request),
-      });
+      console.log("request", request);
 
-      const data = await response.json();
+      const response: AxiosResponse<ApiResponse<ChatbotResponse>> = await apiService.post(
+        `${this.baseUrl}/message`,
+        request
+      );
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get response from chatbot');
-      }
-
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error in chatbot service sendMessage:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: this.handleError(error, 'Failed to get response from chatbot').message
       };
     }
   }
@@ -87,25 +104,16 @@ export class ChatbotService {
    */
   public async getConversationHistory(sessionId: string): Promise<ApiResponse<ChatbotMessage[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/history/${sessionId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response: AxiosResponse<ApiResponse<ChatbotMessage[]>> = await apiService.get(
+        `${this.baseUrl}/history/${sessionId}`
+      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get conversation history');
-      }
-
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error in chatbot service getConversationHistory:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: this.handleError(error, 'Failed to get conversation history').message
       };
     }
   }
@@ -116,25 +124,16 @@ export class ChatbotService {
    */
   public async clearConversationHistory(sessionId: string): Promise<ApiResponse<void>> {
     try {
-      const response = await fetch(`${this.baseUrl}/history/${sessionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response: AxiosResponse<ApiResponse<void>> = await apiService.delete(
+        `${this.baseUrl}/history/${sessionId}`
+      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to clear conversation history');
-      }
-
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error in chatbot service clearConversationHistory:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: this.handleError(error, 'Failed to clear conversation history').message
       };
     }
   }
