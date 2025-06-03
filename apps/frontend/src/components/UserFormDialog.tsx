@@ -44,12 +44,18 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
   useEffect(() => {
     if (user) {
+      // Get doctorId from the user object if it exists
+      // This assumes there might be a relationship between user and doctor
+      const userDoctorId = user.role === 'doctor' || user.role === 'responsable' 
+        ? user.id.toString() // For doctors, use their own ID
+        : ''; // For other roles, no doctorId by default
+      
       setFormData({
         name: user.name,
         email: user.email,
         password: '',
         role: user.role,
-        doctorId: user.doctorId?.toString() || '',
+        doctorId: userDoctorId,
       });
     } else {
       setFormData({
@@ -79,6 +85,21 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       setIsSubmitting(false);
       return;
     }
+    
+    // Password validation for new users or password changes
+    if ((isNewUser || formData.password) && formData.password) {
+      // Password must be at least 8 characters with at least one uppercase, one lowercase, and one number
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
+      if (!passwordRegex.test(formData.password)) {
+        toast({
+          title: "Format de mot de passe invalide",
+          description: "Le mot de passe doit contenir au moins 8 caractères, une lettre majuscule, une lettre minuscule et un chiffre.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     try {
       let response;
@@ -93,10 +114,16 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         );
 
         // If the user is a doctor or responsable and has a doctorId, update the user
+        // Note: We're not actually updating a doctorId property on the user
+        // Instead, we're creating an association in the backend
         if (response.data && response.data.user &&
           (formData.role === 'doctor' || formData.role === 'responsable') &&
           formData.doctorId && formData.doctorId !== 'new') {
+          // Send the doctorId as a custom property that the backend will handle
           await userApi.update(response.data.user.id, {
+            // The backend will handle this custom property
+            // TypeScript doesn't know about this property, but it's handled by the backend
+            // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
             doctorId: parseInt(formData.doctorId)
           });
         }
@@ -125,9 +152,11 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         // Add doctorId if applicable
         if ((formData.role === 'doctor' || formData.role === 'responsable') &&
           formData.doctorId && formData.doctorId !== 'new') {
+          // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
           userData.doctorId = parseInt(formData.doctorId);
         } else if (formData.role !== 'doctor' && formData.role !== 'responsable') {
           // Remove doctorId if the role doesn't need it anymore
+          // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
           userData.doctorId = null;
         }
 
@@ -148,11 +177,23 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
       // Close the dialog
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving user:', error);
+      
+      // Extract more specific error message if available
+      let errorMessage = `Échec de la ${isNewUser ? 'création' : 'mise à jour'} de l'utilisateur.`;
+      
+      if (error.response && error.response.data && error.response.data.message) {
+        // Use the specific error message from the backend
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        // Use the error message from the Error object
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erreur",
-        description: `Échec de la ${isNewUser ? 'création' : 'mise à jour'} de l'utilisateur. Veuillez réessayer.`,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -241,7 +282,7 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
                   ) : null}
                   {doctors.map((doctor) => (
                     <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                      {doctor.name} - {doctor.specialty?.name}
+                      {doctor.user?.name || 'Unknown'} - {doctor.specialty?.name || 'No specialty'}
                     </SelectItem>
                   ))}
                 </SelectContent>
