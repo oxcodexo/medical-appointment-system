@@ -21,8 +21,8 @@ const Register = () => {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
+        title: "Les mots de passe ne correspondent pas",
+        description: "Veuillez vous assurer que vos mots de passe correspondent.",
         variant: "destructive",
       });
       return;
@@ -35,22 +35,22 @@ const Register = () => {
       
       if (success) {
         toast({
-          title: "Registration successful!",
-          description: "Welcome to MediBook! You can now track your appointments.",
+          title: "Inscription reussie!",
+          description: "Bienvenue sur I-SGRM! Vous pouvez maintenant suivre vos rendez-vous.",
         });
         navigate('/dashboard');
       } else {
         toast({
-          title: "Registration failed",
-          description: "An error occurred during registration. Please try again.",
+          title: "Inscription echouée",
+          description: "Une erreur est survenue lors de l'inscription. Veuillez essayer à nouveau.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Registration error:', error);
       toast({
-        title: "Registration failed",
-        description: "An error occurred. Please try again.",
+        title: "Inscription echouée",
+        description: "Une erreur est survenue lors de l'inscription. Veuillez essayer à nouveau.",
         variant: "destructive",
       });
     } finally {
@@ -62,12 +62,12 @@ const Register = () => {
     <div className="min-h-screen bg-gray-50 py-12 flex flex-col justify-center">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          Create a new account
+          Créer un nouveau compte
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
+          Ou{' '}
           <Link to="/login" className="font-medium text-medical-primary hover:text-medical-accent">
-            log in to your existing account
+            se connecter à votre compte existant
           </Link>
         </p>
       </div>
@@ -77,7 +77,7 @@ const Register = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full name
+                Nom complet
               </label>
               <div className="mt-1">
                 <Input
@@ -94,7 +94,7 @@ const Register = () => {
             
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email
               </label>
               <div className="mt-1">
                 <Input
@@ -111,7 +111,7 @@ const Register = () => {
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Mot de passe
               </label>
               <div className="mt-1">
                 <Input
@@ -128,7 +128,7 @@ const Register = () => {
             
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm password
+                Confirmation du mot de passe
               </label>
               <div className="mt-1">
                 <Input
@@ -152,9 +152,9 @@ const Register = () => {
                 {isLoading ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                    Creating account...
+                    Création du compte...
                   </>
-                ) : "Register"}
+                ) : "Créer un compte"}
               </Button>
             </div>
           </form>

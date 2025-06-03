@@ -39,10 +39,11 @@ const Home = () => {
           <div className="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
             <div className="mb-10 lg:mb-0">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Your Health, Our Priority
+              Votre santé, notre priorité
               </h1>
               <p className="text-xl text-gray-700 mb-8">
-                Book appointments with top doctors in your area without creating an account. Simple, fast, and secure.
+              Prenez rendez-vous avec les meilleurs médecins de votre région
+              sans créer de compte. Simple, rapide et sécurisé.
               </p>
               
               <form onSubmit={handleSearch} className="flex space-x-4 mb-8">
@@ -50,28 +51,28 @@ const Home = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
                     type="text"
-                    placeholder="Search by doctor name or specialty..."
+                    placeholder="Rechercher par nom de médecin ou spécialité..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Button type="submit">Search</Button>
+                <Button type="submit">Rechercher</Button>
               </form>
               
               <div>
                 <Link to="/doctors">
-                  <Button variant="outline" className="mr-4">Browse All Doctors</Button>
+                  <Button variant="outline" className="mr-4">Parcourir tous les médecins</Button>
                 </Link>
               </div>
             </div>
             
             <div className="rounded-lg bg-white p-6 shadow-xl">
               <div className="aspect-w-16 aspect-h-9 relative rounded-lg overflow-hidden bg-medical-light animate-pulse-gentle">
-                <img 
-                  src="/placeholder.svg" 
-                  alt="Doctor consultation"
-                  className="object-cover"
+                <img
+                  src="/vectors/booking-appointements-isgrm.svg"
+                  alt="Consultation médicale"
+                  className="object-cover w-full h-full"
                 />
               </div>
             </div>
@@ -82,16 +83,16 @@ const Home = () => {
       {/* How It Works Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Comment ça marche</h2>
           
           <div className="grid md:grid-cols-3 gap-10">
             <div className="text-center p-6 rounded-lg">
               <div className="w-16 h-16 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search size={24} className="text-medical-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Find a Doctor</h3>
+              <h3 className="text-xl font-semibold mb-3">Trouver un médecin</h3>
               <p className="text-gray-600">
-                Search for specialists by name, specialty, or availability to find the perfect match for your needs.
+                Recherchez des spécialistes par nom, spécialité ou disponibilité pour trouver le parfait match pour vos besoins.
               </p>
             </div>
             
@@ -99,9 +100,9 @@ const Home = () => {
               <div className="w-16 h-16 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar size={24} className="text-medical-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Book Appointment</h3>
+              <h3 className="text-xl font-semibold mb-3">Prendre rendez-vous</h3>
               <p className="text-gray-600">
-                Select a convenient date and time for your appointment, no account required.
+                Sélectionnez une date et une heure convenables pour votre rendez-vous, sans compte requis.
               </p>
             </div>
             
@@ -109,9 +110,9 @@ const Home = () => {
               <div className="w-16 h-16 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle size={24} className="text-medical-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Get Confirmation</h3>
+              <h3 className="text-xl font-semibold mb-3">Obtenir une confirmation</h3>
               <p className="text-gray-600">
-                Receive instant confirmation via email, with an option to create an account to track your appointments.
+                Recevez une confirmation instantanée par email, avec l'option de créer un compte pour suivre vos rendez-vous.
               </p>
             </div>
           </div>
@@ -121,7 +122,7 @@ const Home = () => {
       {/* Specialties Section */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">Browse by Specialty</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Parcourir par spécialité</h2>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {specialties.length > 0 ? (
@@ -142,7 +143,7 @@ const Home = () => {
               ))
             ) : (
               <div className="col-span-full text-center py-8">
-                <p>Loading specialties...</p>
+                <p>Chargement des spécialités...</p>
               </div>
             )}
           </div>
@@ -152,13 +153,13 @@ const Home = () => {
       {/* Call To Action */}
       <section className="py-16 bg-gradient-to-r from-medical-primary to-medical-secondary text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Book Your Appointment?</h2>
+          <h2 className="text-3xl font-bold mb-6">Prêt à prendre rendez-vous?</h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join thousands of patients who trust us for their healthcare needs.
+            Rejoignez des milliers de patients qui nous font confiance pour leurs besoins en santé.
           </p>
           <Link to="/doctors">
             <Button size="lg" variant="secondary" className="bg-white text-medical-primary hover:bg-gray-100">
-              Find a Doctor Now
+              Trouver un médecin maintenant
             </Button>
           </Link>
         </div>

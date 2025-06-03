@@ -66,14 +66,14 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
       setIsEditMode(false);
 
       toast({
-        title: "Profile updated",
-        description: "Your profile information has been saved."
+        title: "Profil mis à jour",
+        description: "Vos informations de profil ont été enregistrées."
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Error",
-        description: "Failed to update profile information.",
+        title: "Erreur",
+        description: "Échec de la mise à jour des informations de profil.",
         variant: "destructive"
       });
     }
@@ -90,27 +90,27 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Doctor Profile</CardTitle>
+            <CardTitle>Profil du médecin</CardTitle>
             {isEditMode ? (
               <div className="flex space-x-2">
                 <Button variant="ghost" size="sm" onClick={handleCancel}>
                   <X className="mr-2 h-4 w-4" />
-                  Cancel
+                  Annuler
                 </Button>
                 <Button size="sm" onClick={handleSave}>
                   <Save className="mr-2 h-4 w-4" />
-                  Save
+                  Sauvegarder
                 </Button>
               </div>
             ) : (
               <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
+                Modifier le profil
               </Button>
             )}
           </div>
           <CardDescription>
-            Review and update your professional profile information
+            Vérifiez et mettez à jour vos informations de profil professionnel
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,7 +127,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                     size="sm"
                     className="absolute bottom-0 right-0"
                   >
-                    Change
+                    Changer
                   </Button>
                 )}
               </div>
@@ -140,7 +140,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
             <div className="flex-1 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Nom complet</Label>
                   {isEditMode ? (
                     <Input
                       id="name"
@@ -156,26 +156,26 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="specialty">Specialty</Label>
+                  <Label htmlFor="specialty">Spécialité</Label>
                   {isEditMode ? (
                     <Select
                       value={profile.specialty?.name}
                       onValueChange={(value) => handleChange('specialtyId', value)}
                     >
                       <SelectTrigger id="specialty">
-                        <SelectValue placeholder="Select specialty" />
+                        <SelectValue placeholder="Sélectionnez la spécialité" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Cardiology">Cardiology</SelectItem>
-                        <SelectItem value="Dermatology">Dermatology</SelectItem>
-                        <SelectItem value="Neurology">Neurology</SelectItem>
-                        <SelectItem value="Orthopedics">Orthopedics</SelectItem>
-                        <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-                        <SelectItem value="Psychiatry">Psychiatry</SelectItem>
-                        <SelectItem value="Family Medicine">Family Medicine</SelectItem>
-                        <SelectItem value="Internal Medicine">Internal Medicine</SelectItem>
-                        <SelectItem value="Ophthalmology">Ophthalmology</SelectItem>
-                        <SelectItem value="Gynecology">Gynecology</SelectItem>
+                        <SelectItem value="Cardiology">Cardiologie</SelectItem>
+                        <SelectItem value="Dermatology">Dermatologie</SelectItem>
+                        <SelectItem value="Neurology">Neurologie</SelectItem>
+                        <SelectItem value="Orthopedics">Orthopédie</SelectItem>
+                        <SelectItem value="Pediatrics">Pediatrie</SelectItem>
+                        <SelectItem value="Psychiatry">Psychiatrie</SelectItem>
+                        <SelectItem value="Family Medicine">Medecine de famille</SelectItem>
+                        <SelectItem value="Internal Medicine">Medecine interne</SelectItem>
+                        <SelectItem value="Ophthalmology">Ophthalmologie</SelectItem>
+                        <SelectItem value="Gynecology">Gynécologie</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
@@ -186,7 +186,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Adresse e-mail</Label>
                   {isEditMode ? (
                     <Input
                       id="email"
@@ -203,7 +203,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Numéro de téléphone</Label>
                   {isEditMode ? (
                     <Input
                       id="phone"
@@ -220,7 +220,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="experience">Years of Experience</Label>
+                  <Label htmlFor="experience">Expérience</Label>
                   {isEditMode ? (
                     <Input
                       id="experience"
@@ -235,7 +235,7 @@ const DoctorProfile: React.FC<DoctorProfileProps> = ({ doctor }) => {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="bio">Professional Bio</Label>
+                  <Label htmlFor="bio">Biographie professionnelle</Label>
                   {isEditMode ? (
                     <Textarea
                       id="bio"

@@ -20,9 +20,9 @@ const Navbar = () => {
   const getLinks = () => {
     // Default links for non-authenticated users or patients
     const defaultLinks = [
-      { label: 'Home', path: '/', icon: <Home className="w-5 h-5" /> },
-      { label: 'Find Doctors', path: '/doctors', icon: <Users className="w-5 h-5" /> },
-      { label: 'About Us', path: '/about', icon: <Info className="w-5 h-5" /> },
+      { label: 'Accueil', path: '/', icon: <Home className="w-5 h-5" /> },
+      { label: 'Trouver des médecins', path: '/doctors', icon: <Users className="w-5 h-5" /> },
+      { label: 'À propos', path: '/about', icon: <Info className="w-5 h-5" /> },
     ];
     
     if (!isAuthenticated || user?.role === 'patient') return defaultLinks;
@@ -39,7 +39,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-semibold text-medical-primary">MediBook</span>
+            <img src="/logo/logo.svg" alt="I-SGRM" className="h-8" />
             </Link>
           </div>
           
@@ -76,20 +76,20 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Dashboard</Link>
+                    <Link to="/dashboard" className="w-full">Tableau de bord</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => logout()}>
-                    Logout
+                  Déconnexion
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-3">
                 <Link to="/login">
-                  <Button variant="ghost">Log In</Button>
+                  <Button variant="ghost">Se connecter</Button>
                 </Link>
                 <Link to="/register">
-                  <Button>Sign Up</Button>
+                  <Button>S'inscrire</Button>
                 </Link>
               </div>
             )}
@@ -134,7 +134,7 @@ const Navbar = () => {
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-primary hover:bg-gray-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  Tableau de bord
                 </Link>
                 <button
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-primary hover:bg-gray-50"
@@ -143,7 +143,7 @@ const Navbar = () => {
                     setIsMobileMenuOpen(false);
                   }}
                 >
-                  Logout
+                  Déconnexion
                 </button>
               </>
             ) : (
@@ -153,14 +153,14 @@ const Navbar = () => {
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-medical-primary hover:bg-gray-50"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Log In
+                  Se connecter
                 </Link>
                 <Link
                   to="/register"
                   className="block px-3 py-2 rounded-md text-base font-medium text-medical-primary hover:bg-medical-light"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Sign Up
+                  S'inscrire
                 </Link>
               </>
             )}

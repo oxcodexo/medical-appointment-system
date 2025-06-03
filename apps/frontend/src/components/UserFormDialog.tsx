@@ -72,8 +72,8 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
     // Validation
     if (!formData.name || !formData.email || (isNewUser && !formData.password)) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill in all required fields.",
+        title: "Champs obligatoires manquants",
+        description: "Veuillez remplir tous les champs obligatoires.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -135,10 +135,10 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       }
 
       toast({
-        title: isNewUser ? "User created" : "User updated",
+        title: isNewUser ? "Utilisateur créé" : "Utilisateur mis à jour",
         description: isNewUser
-          ? `${formData.name} has been added as a ${formData.role}.`
-          : `${formData.name} has been updated.`,
+          ? `${formData.name} a été ajouté en tant que ${formData.role}.`
+          : `${formData.name} a été mis à jour.`,
       });
 
       // Notify parent component about the saved user if callback exists
@@ -151,8 +151,8 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
     } catch (error) {
       console.error('Error saving user:', error);
       toast({
-        title: "Error",
-        description: `Failed to ${isNewUser ? 'create' : 'update'} user. Please try again.`,
+        title: "Erreur",
+        description: `Échec de la ${isNewUser ? 'création' : 'mise à jour'} de l'utilisateur. Veuillez réessayer.`,
         variant: "destructive",
       });
     } finally {
@@ -164,15 +164,15 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isNewUser ? "Create New User" : "Edit User"}</DialogTitle>
+          <DialogTitle>{isNewUser ? "Créer un nouvel utilisateur" : "Modifier l'utilisateur"}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Nom complet</Label>
             <Input
               id="name"
-              placeholder="Enter full name"
+              placeholder="Entrez le nom complet"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               required
@@ -180,11 +180,11 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Adresse email</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter email address"
+              placeholder="Entrez l'adresse email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
               required
@@ -193,12 +193,12 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
           <div className="grid gap-2">
             <Label htmlFor="password">
-              {isNewUser ? "Password" : "New Password (leave blank to keep unchanged)"}
+              {isNewUser ? "Mot de passe" : "Nouveau mot de passe (laissez vide pour garder inchangé)"}
             </Label>
             <Input
               id="password"
               type="password"
-              placeholder={isNewUser ? "Enter password" : "Enter new password (optional)"}
+              placeholder={isNewUser ? "Entrez le mot de passe" : "Entrez un nouveau mot de passe (facultatif)"}
               value={formData.password}
               onChange={(e) => handleChange('password', e.target.value)}
               required={isNewUser}
@@ -206,19 +206,19 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="role">User Role</Label>
+            <Label htmlFor="role">Rôle de l'utilisateur</Label>
             <Select
               value={formData.role}
               onValueChange={(value) => handleChange('role', value)}
             >
               <SelectTrigger id="role">
-                <SelectValue placeholder="Select user role" />
+                <SelectValue placeholder="Sélectionner un rôle" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="patient">Patient</SelectItem>
-                <SelectItem value="doctor">Doctor</SelectItem>
-                <SelectItem value="responsable">Doctor Manager</SelectItem>
-                <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="doctor">Médecin</SelectItem>
+                <SelectItem value="responsable">Responsable</SelectItem>
+                <SelectItem value="admin">Administrateur</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -226,18 +226,18 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
           {(formData.role === 'doctor' || formData.role === 'responsable') && (
             <div className="grid gap-2">
               <Label htmlFor="doctorId">
-                {formData.role === 'doctor' ? "Associate With Doctor Profile" : "Assign Doctor to Manage"}
+                {formData.role === 'doctor' ? "Associer au profil du médecin" : "Assigner au médecin à gérer"}
               </Label>
               <Select
                 value={formData.doctorId}
                 onValueChange={(value) => handleChange('doctorId', value)}
               >
                 <SelectTrigger id="doctorId">
-                  <SelectValue placeholder="Select a doctor" />
+                  <SelectValue placeholder="Sélectionner un médecin" />
                 </SelectTrigger>
                 <SelectContent>
                   {formData.role === 'doctor' ? (
-                    <SelectItem value="new">Create new doctor profile</SelectItem>
+                    <SelectItem value="new">Créer un nouveau profil de médecin</SelectItem>
                   ) : null}
                   {doctors.map((doctor) => (
                     <SelectItem key={doctor.id} value={doctor.id.toString()}>
@@ -252,16 +252,16 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Annuler
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                {isNewUser ? "Creating..." : "Updating..."}
+                {isNewUser ? "Création..." : "Mise à jour..."}
               </>
             ) : (
-              isNewUser ? "Create User" : "Update User"
+              isNewUser ? "Créer l'utilisateur" : "Mettre à jour l'utilisateur"
             )}
           </Button>
         </DialogFooter>

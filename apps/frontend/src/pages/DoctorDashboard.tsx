@@ -57,8 +57,8 @@ const DoctorDashboard = () => {
       } catch (error) {
         console.error('Error fetching doctor data:', error);
         toast({
-          title: "Error",
-          description: "Failed to load doctor data",
+          title: "Erreur",
+          description: "Erreur lors du chargement des données du médecin",
           variant: "destructive"
         });
       } finally {
@@ -77,15 +77,15 @@ const DoctorDashboard = () => {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case AppointmentStatus.CONFIRMED:
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Confirmed</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Confirmé</Badge>;
       case AppointmentStatus.PENDING:
-        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Pending</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">En attente</Badge>;
       case AppointmentStatus.COMPLETED:
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Completé</Badge>;
       case AppointmentStatus.CANCELED:
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Canceled</Badge>;
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Annulé</Badge>;
       case AppointmentStatus.NO_SHOW:
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">No Show</Badge>;
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Non présent</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -106,8 +106,8 @@ const DoctorDashboard = () => {
     setSelectedAppointment(updatedAppointment);
 
     toast({
-      title: "Appointment Updated",
-      description: `The appointment status has been updated to ${updatedAppointment.status}.`
+      title: "Rendez-vous mis à jour",
+      description: `Le statut du rendez-vous a été mis à jour en ${updatedAppointment.status}.`
     });
   };
 
@@ -148,7 +148,7 @@ const DoctorDashboard = () => {
                   ))
                 ) : (
                   <div className="text-xs text-gray-400 text-center h-full flex items-center justify-center">
-                    No appointments
+                    Aucun rendez-vous
                   </div>
                 )}
               </div>
@@ -170,9 +170,9 @@ const DoctorDashboard = () => {
   if (!doctorInfo) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center flex-col">
-        <h2 className="text-xl font-semibold mb-4">Doctor Profile Not Found</h2>
+        <h2 className="text-xl font-semibold mb-4">Profil du médecin non trouvé</h2>
         <p className="text-gray-600">
-          Your user account is not linked to any doctor profile. Please contact an administrator.
+          Votre compte utilisateur n'est pas lié à aucun profil de médecin. Veuillez contacter un administrateur.
         </p>
       </div>
     );
@@ -181,7 +181,7 @@ const DoctorDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Doctor Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Tableau de bord du médecin</h1>
 
         {/* Doctor info summary */}
         <div className="mb-6 flex items-center">
@@ -201,10 +201,10 @@ const DoctorDashboard = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="calendar">
-              <Calendar className="mr-2 h-4 w-4" />Calendar
+              <Calendar className="mr-2 h-4 w-4" />Calendrier
             </TabsTrigger>
             <TabsTrigger value="schedule">
-              <Clock className="mr-2 h-4 w-4" />Schedule
+              <Clock className="mr-2 h-4 w-4" />Agenda
             </TabsTrigger>
             <TabsTrigger value="profile">
               <User className="mr-2 h-4 w-4" />Profile
@@ -215,7 +215,7 @@ const DoctorDashboard = () => {
             <div className="flex flex-col md:flex-row gap-6 mb-8">
               <Card className="md:w-fit w-full">
                 <CardHeader>
-                  <CardTitle className="text-lg">Select Date</CardTitle>
+                  <CardTitle className="text-lg">Sélectionner une date</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CalendarComponent
@@ -229,9 +229,9 @@ const DoctorDashboard = () => {
 
               <Card className="flex-1 w-full">
                 <CardHeader>
-                  <CardTitle className="text-lg">Appointments</CardTitle>
+                  <CardTitle className="text-lg">Rendez-vous</CardTitle>
                   <CardDescription>
-                    {selectedDate && `Week of ${format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'MMMM d, yyyy')}`}
+                    {selectedDate && `Semaine du ${format(startOfWeek(selectedDate, { weekStartsOn: 1 }), 'MMMM d, yyyy')}`}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -242,7 +242,7 @@ const DoctorDashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Today's Appointments</CardTitle>
+                <CardTitle>Rendez-vous du jour</CardTitle>
                 <CardDescription>
                   {format(new Date(), 'EEEE, MMMM d, yyyy')}
                 </CardDescription>
@@ -276,7 +276,7 @@ const DoctorDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    No appointments scheduled for today.
+                    Aucun rendez-vous pour aujourd'hui.
                   </div>
                 )}
               </CardContent>

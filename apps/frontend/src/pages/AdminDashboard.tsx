@@ -83,8 +83,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching admin data:', error);
       toast({
-        title: "Error loading data",
-        description: "There was a problem loading the dashboard data.",
+        title: "Erreur de chargement des données",
+        description: "Il y a eu un problème lors du chargement des données du tableau de bord.",
         variant: "destructive"
       });
     } finally {
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (userId: number) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action ne peut pas être annulée.')) {
       try {
         await userService.deleteUser(userId);
 
@@ -144,14 +144,14 @@ const AdminDashboard = () => {
         setDoctors(doctors.filter(doctor => doctor.userId !== userId));
 
         toast({
-          title: "User deleted",
-          description: "The user has been successfully deleted.",
+          title: "Utilisateur supprimé",
+          description: "L'utilisateur a été supprimé avec succès.",
         });
       } catch (error) {
         console.error('Error deleting user:', error);
         toast({
-          title: "Error deleting user",
-          description: "There was a problem deleting the user.",
+          title: "Erreur de suppression de l'utilisateur",
+          description: "Il y a eu un problème lors de la suppression de l'utilisateur.",
           variant: "destructive"
         });
       }
@@ -168,8 +168,8 @@ const AdminDashboard = () => {
         setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u));
 
         toast({
-          title: "User updated",
-          description: "The user has been successfully updated.",
+          title: "Utilisateur mis à jour",
+          description: "L'utilisateur a été mis à jour avec succès.",
         });
       } else {
         // Create new user
@@ -179,8 +179,8 @@ const AdminDashboard = () => {
         setUsers([...users, newUser]);
 
         toast({
-          title: "User created",
-          description: "The new user has been successfully created.",
+          title: "Utilisateur créé",
+          description: "Le nouvel utilisateur a été créé avec succès.",
         });
       }
 
@@ -214,8 +214,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error saving user:', error);
       toast({
-        title: "Error saving user",
-        description: "There was a problem saving the user data.",
+        title: "Erreur de sauvegarde de l'utilisateur",
+        description: "Il y a eu un problème lors de la sauvegarde des données de l'utilisateur.",
         variant: "destructive"
       });
     }
@@ -252,8 +252,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error updating appointment:', error);
       toast({
-        title: "Error updating appointment",
-        description: "There was a problem updating the appointment.",
+        title: "Erreur de mise à jour du rendez-vous",
+        description: "Il y a eu un problème lors de la mise à jour du rendez-vous.",
         variant: "destructive"
       });
     }
@@ -274,17 +274,17 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Tableau de bord</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Total Users</CardTitle>
+              <CardTitle className="text-md font-medium">Total Utilisateurs</CardTitle>
               <Users className="h-4 w-4 text-medical-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{users.length}</div>
-              <p className="text-xs text-muted-foreground">All registered users</p>
+              <p className="text-xs text-muted-foreground">Tous les utilisateurs enregistrés</p>
             </CardContent>
           </Card>
 
@@ -295,29 +295,29 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{countUsersByRole('patient')}</div>
-              <p className="text-xs text-muted-foreground">Registered patients</p>
+              <p className="text-xs text-muted-foreground">Utilisateurs patients enregistrés</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Doctors</CardTitle>
+              <CardTitle className="text-md font-medium">Médecins</CardTitle>
               <UserIcon className="h-4 w-4 text-medical-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{doctors.length}</div>
-              <p className="text-xs text-muted-foreground">Active doctors</p>
+              <p className="text-xs text-muted-foreground">Médecins actifs</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Appointments</CardTitle>
+              <CardTitle className="text-md font-medium">Rendez-vous</CardTitle>
               <Calendar className="h-4 w-4 text-medical-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{appointments.length}</div>
-              <p className="text-xs text-muted-foreground">Total appointments</p>
+              <p className="text-xs text-muted-foreground">Total rendez-vous</p>
             </CardContent>
           </Card>
         </div>
@@ -325,13 +325,13 @@ const AdminDashboard = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-8">
             <TabsTrigger value="users">
-              <Users className="mr-2 h-4 w-4" />Users
+              <Users className="mr-2 h-4 w-4" />Utilisateurs
             </TabsTrigger>
             <TabsTrigger value="appointments">
-              <Calendar className="mr-2 h-4 w-4" />Appointments
+              <Calendar className="mr-2 h-4 w-4" />Rendez-vous
             </TabsTrigger>
             <TabsTrigger value="profile">
-              <UserIcon className="mr-2 h-4 w-4" />My Profile
+              <UserIcon className="mr-2 h-4 w-4" />Mon profil
             </TabsTrigger>
           </TabsList>
 
@@ -339,13 +339,13 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <CardTitle>User Management</CardTitle>
+                  <CardTitle>Gestion des utilisateurs</CardTitle>
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="relative">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                       <Input
                         type="search"
-                        placeholder="Search users..."
+                        placeholder="Rechercher des utilisateurs..."
                         className="pl-8 w-full md:w-[250px]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -354,7 +354,7 @@ const AdminDashboard = () => {
 
                     <Button onClick={handleCreateUser}>
                       <PlusCircle className="mr-2 h-4 w-4" />
-                      Add User
+                      Ajouter un utilisateur
                     </Button>
                   </div>
                 </div>
@@ -364,7 +364,7 @@ const AdminDashboard = () => {
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('all')}
                   >
-                    All Users
+                    Tous les utilisateurs
                   </Badge>
                   <Badge
                     variant={activeUserType === 'patient' ? 'default' : 'outline'}
@@ -378,7 +378,7 @@ const AdminDashboard = () => {
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('doctor')}
                   >
-                    Doctors
+                    Médecins
                   </Badge>
                   <Badge
                     variant={activeUserType === 'responsable' ? 'default' : 'outline'}
@@ -392,7 +392,7 @@ const AdminDashboard = () => {
                     className="cursor-pointer"
                     onClick={() => setActiveUserType('admin')}
                   >
-                    Admins
+                    Administrateurs
                   </Badge>
                 </div>
               </CardHeader>
@@ -402,9 +402,9 @@ const AdminDashboard = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Adresse email</TableHead>
+                          <TableHead>Rôle</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -423,18 +423,18 @@ const AdminDashboard = () => {
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="sm">
                                     <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Open menu</span>
+                                    <span className="sr-only">Ouvrir le menu</span>
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                                    Edit
+                                    Modifier
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-red-600"
                                     onClick={() => handleDeleteUser(user.id)}
                                   >
-                                    Delete
+                                    Supprimer
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -446,7 +446,7 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    No users found matching your search criteria.
+                    Aucun utilisateur trouvé correspondant à vos critères de recherche.
                   </div>
                 )}
               </CardContent>
@@ -457,12 +457,12 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>All Appointments</CardTitle>
+                  <CardTitle>Tous les rendez-vous</CardTitle>
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                     <Input
                       type="search"
-                      placeholder="Search appointments..."
+                      placeholder="Rechercher des rendez-vous..."
                       className="pl-8 w-full md:w-[250px]"
                       value={appointmentSearchTerm}
                       onChange={(e) => setAppointmentSearchTerm(e.target.value)}
@@ -477,9 +477,9 @@ const AdminDashboard = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Patient</TableHead>
-                          <TableHead>Doctor</TableHead>
-                          <TableHead>Date & Time</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>Médecin</TableHead>
+                          <TableHead>Date & Heure</TableHead>
+                          <TableHead>Statut</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -515,7 +515,7 @@ const AdminDashboard = () => {
                                   size="sm"
                                   onClick={() => handleViewAppointment(appointment)}
                                 >
-                                  View Details
+                                  Voir les détails
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -526,7 +526,7 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    No appointments found.
+                    Aucun rendez-vous trouvé.
                   </div>
                 )}
               </CardContent>

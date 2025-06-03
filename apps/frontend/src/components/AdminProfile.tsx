@@ -30,8 +30,8 @@ const AdminProfile = () => {
     setIsEditMode(false);
 
     toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved."
+      title: "Profil mis à jour",
+      description: "Vos informations de profil ont été enregistrées."
     });
   };
 
@@ -40,7 +40,7 @@ const AdminProfile = () => {
     setProfile({
       name: user?.name || '',
       email: user?.email || '',
-      phone: '+1 (555) 987-6543',
+      phone: '+212 6 55 55 55 55',
       role: user?.role || 'admin',
     });
     setIsEditMode(false);
@@ -50,27 +50,27 @@ const AdminProfile = () => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Admin Profile</CardTitle>
+          <CardTitle>Profil de l'administrateur</CardTitle>
           {isEditMode ? (
             <div className="flex space-x-2">
               <Button variant="ghost" size="sm" onClick={handleCancel}>
                 <X className="mr-2 h-4 w-4" />
-                Cancel
+                Annuler
               </Button>
               <Button size="sm" onClick={handleSave}>
                 <Save className="mr-2 h-4 w-4" />
-                Save
+                Enregistrer
               </Button>
             </div>
           ) : (
             <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Profile
+              Modifier le profil
             </Button>
           )}
         </div>
         <CardDescription>
-          Review and update your account information
+          Vérifiez et mettez à jour vos informations de compte
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -87,7 +87,7 @@ const AdminProfile = () => {
                   size="sm"
                   className="absolute bottom-0 right-0"
                 >
-                  Change
+                  Changer
                 </Button>
               )}
             </div>
@@ -103,7 +103,7 @@ const AdminProfile = () => {
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Nom complet</Label>
                 {isEditMode ? (
                   <Input
                     id="name"
@@ -119,7 +119,7 @@ const AdminProfile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Adresse email</Label>
                 {isEditMode ? (
                   <Input
                     id="email"
@@ -136,7 +136,7 @@ const AdminProfile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Numéro de téléphone</Label>
                 {isEditMode ? (
                   <Input
                     id="phone"
@@ -153,7 +153,7 @@ const AdminProfile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role">Rôle</Label>
                 <div className="flex items-center border px-3 py-2 rounded-md bg-gray-50">
                   <Shield className="h-4 w-4 text-gray-400 mr-2" />
                   <span className="capitalize">{profile.role}</span>
@@ -162,27 +162,27 @@ const AdminProfile = () => {
 
               {isEditMode && (
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="current-password">Current Password</Label>
+                  <Label htmlFor="current-password">Mot de passe actuel</Label>
                   <Input
                     id="current-password"
                     type="password"
-                    placeholder="Enter your current password to make changes"
+                    placeholder="Entrez votre mot de passe actuel pour effectuer des modifications"
                   />
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <Label htmlFor="new-password">New Password</Label>
+                      <Label htmlFor="new-password">Nouveau mot de passe</Label>
                       <Input
                         id="new-password"
                         type="password"
-                        placeholder="New password (optional)"
+                        placeholder="Nouveau mot de passe (facultatif)"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
                       <Input
                         id="confirm-password"
                         type="password"
-                        placeholder="Confirm new password"
+                        placeholder="Confirmer le nouveau mot de passe"
                       />
                     </div>
                   </div>

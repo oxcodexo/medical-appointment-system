@@ -77,8 +77,8 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
   const saveAvailability = async () => {
     if (!selectedDay || !selectedTimeSlot.startTime || !selectedTimeSlot.endTime) {
       toast({
-        title: "Missing information",
-        description: "Please select a day and time slot.",
+        title: "Information manquante",
+        description: "Veuillez sélectionner un jour et une plage horaire.",
         variant: "destructive"
       });
       return;
@@ -101,14 +101,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       setSelectedTimeSlot({ startTime: '09:00', endTime: '17:00' });
 
       toast({
-        title: "Schedule updated",
-        description: `Your availability for ${selectedDay} has been updated.`
+        title: "Horaires mis à jour",
+        description: `Vos horaires pour ${selectedDay} ont été mis à jour.`
       });
     } catch (error) {
       console.error('Error updating availability:', error);
       toast({
-        title: "Error",
-        description: "Failed to update availability.",
+        title: "Erreur",
+        description: "Échec de la mise à jour des horaires.",
         variant: "destructive"
       });
     }
@@ -117,8 +117,8 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
   const saveAbsence = async () => {
     if (!absenceDate.from || !absenceDate.to || !absenceReason) {
       toast({
-        title: "Missing information",
-        description: "Please select dates and provide a reason.",
+        title: "Information manquante",
+        description: "Veuillez sélectionner des dates et fournir une raison.",
         variant: "destructive"
       });
       return;
@@ -145,14 +145,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       setAbsenceReason('');
 
       toast({
-        title: "Absence scheduled",
-        description: `Your absence has been scheduled.`
+        title: "Absence planifiée",
+        description: `Votre absence a été planifiée.`
       });
     } catch (error) {
       console.error('Error scheduling absence:', error);
       toast({
-        title: "Error",
-        description: "Failed to schedule absence.",
+        title: "Erreur",
+        description: "Échec de la planification de l'absence.",
         variant: "destructive"
       });
     }
@@ -166,14 +166,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       setAvailability(availability.filter(a => a.dayOfWeek !== dayOfWeek));
 
       toast({
-        title: "Availability removed",
-        description: `Your availability for ${dayOfWeek} has been removed.`
+        title: "Horaires supprimés",
+        description: `Vos horaires pour ${dayOfWeek} ont été supprimés.`
       });
     } catch (error) {
       console.error('Error removing availability:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove availability.",
+        title: "Erreur",
+        description: "Échec de la suppression des horaires.",
         variant: "destructive"
       });
     }
@@ -187,14 +187,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       setAbsences(absences.filter(a => a.id !== absenceId));
 
       toast({
-        title: "Absence removed",
-        description: `The selected absence has been removed.`
+        title: "Absence supprimée",
+        description: `L'absence sélectionnée a été supprimée.`
       });
     } catch (error) {
       console.error('Error removing absence:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove absence.",
+        title: "Erreur",
+        description: "Échec de la suppression de l'absence.",
         variant: "destructive"
       });
     }
@@ -221,14 +221,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Weekly Schedule</CardTitle>
+            <CardTitle>Horaires hebdomadaires</CardTitle>
             <Button onClick={() => setIsAddingAvailability(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Set Hours
+              Définir les horaires
             </Button>
           </div>
           <CardDescription>
-            Define your regular working hours for each day
+            Définissez vos horaires de travail pour chaque jour
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -245,7 +245,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-gray-100 ml-2">
-                        Not Available
+                        Indisponible
                       </Badge>
                     )}
                   </div>
@@ -264,14 +264,14 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Time Off & Absences</CardTitle>
+            <CardTitle>Temps libre & Absences</CardTitle>
             <Button onClick={() => setIsAddingAbsence(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Absence
+              Ajouter une absence
             </Button>
           </div>
           <CardDescription>
-            Manage your holidays, sick days, and other absences
+            Gestionnez vos jours de congé, de maladie, et autres absences
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -295,7 +295,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              No absences scheduled.
+              Aucune absence planifiée.
             </div>
           )}
         </CardContent>
@@ -305,11 +305,11 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       <Dialog open={isAddingAvailability} onOpenChange={setIsAddingAvailability}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set Working Hours</DialogTitle>
+            <DialogTitle>Définir les horaires</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Day of Week</label>
+              <label className="text-sm font-medium">Jour de la semaine</label>
               <Select value={selectedDay} onValueChange={(value: typeof days[number]) => setSelectedDay(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a day" />
@@ -326,7 +326,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Start Time</label>
+                <label className="text-sm font-medium">Heure de début</label>
                 <Select
                   value={selectedTimeSlot.startTime}
                   onValueChange={(value) => setSelectedTimeSlot({
@@ -348,7 +348,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">End Time</label>
+                <label className="text-sm font-medium">Heure de fin</label>
                 <Select
                   value={selectedTimeSlot.endTime}
                   onValueChange={(value) => setSelectedTimeSlot({
@@ -371,18 +371,18 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             </div>
 
             {!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime) && (
-              <p className="text-sm text-red-500">End time must be after start time</p>
+              <p className="text-sm text-red-500">Heure de fin doit être après l'heure de début</p>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddingAvailability(false)}>
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={saveAvailability}
               disabled={!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime)}
             >
-              Save
+              Enregistrer
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -392,11 +392,11 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
       <Dialog open={isAddingAbsence} onOpenChange={setIsAddingAbsence}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Schedule Absence</DialogTitle>
+            <DialogTitle>Planifier une absence</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date Range</label>
+              <label className="text-sm font-medium">Plage de dates</label>
               <div className="grid gap-2">
                 <Calendar
                   mode="range"
@@ -429,9 +429,9 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Reason</label>
+              <label className="text-sm font-medium">Raison</label>
               <Textarea
-                placeholder="Reason for absence"
+                placeholder="Raison de l'absence"
                 value={absenceReason}
                 onChange={(e) => setAbsenceReason(e.target.value)}
               />
@@ -439,13 +439,13 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddingAbsence(false)}>
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={saveAbsence}
               disabled={!absenceDate.from || !absenceDate.to || !absenceReason}
             >
-              Save
+              Enregistrer
             </Button>
           </DialogFooter>
         </DialogContent>

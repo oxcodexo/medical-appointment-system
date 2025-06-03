@@ -130,8 +130,8 @@ const DoctorDetail = () => {
       await appointmentService.createAppointment(appointmentData);
 
       toast({
-        title: "Appointment booked successfully!",
-        description: `Your appointment with ${doctor.user?.name} on ${formattedDate} at ${selectedTime} is pending confirmation.`,
+        title: "Rendez-vous réservé avec succès !",
+        description: `Votre rendez-vous avec ${doctor.user?.name} le ${formattedDate} à ${selectedTime} est en attente de confirmation.`,
       });
 
       setIsBookingModalOpen(false);
@@ -140,10 +140,10 @@ const DoctorDetail = () => {
     } catch (error) {
       console.error('Error booking appointment:', error);
       toast({
-        title: "Error booking appointment",
+        title: "Erreur de réservation du rendez-vous",
         description: typeof error === 'object' && error !== null && 'message' in error
           ? String(error.message)
-          : "There was a problem booking your appointment. Please try again.",
+          : "Il y a eu un problème lors de la réservation de votre rendez-vous. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -164,7 +164,7 @@ const DoctorDetail = () => {
 
   const formatWorkingHours = (doctor: Doctor) => {
     if (!doctor.doctorAvailabilities || doctor.doctorAvailabilities.length === 0) {
-      return { 'No availability': 'Working hours not specified' };
+      return { 'Pas de disponibilité': 'Heures de travail non spécifiées' };
     }
 
     // Create an object with days as keys and time ranges as values
@@ -173,7 +173,7 @@ const DoctorDetail = () => {
 
     // Initialize all days as 'Not available'
     daysOrder.forEach(day => {
-      workingHours[day] = 'Not available';
+      workingHours[day] = 'Pas de disponibilité';
     });
 
     // Update with actual availabilities
@@ -198,9 +198,9 @@ const DoctorDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Doctor not found</h2>
-          <p className="text-gray-600 mb-6">The doctor you're looking for doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate('/doctors')}>Browse All Doctors</Button>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Docteur non trouvé</h2>
+          <p className="text-gray-600 mb-6">Le docteur que vous recherchez n'existe pas ou a été supprimé.</p>
+          <Button onClick={() => navigate('/doctors')}>Parcourir tous les docteurs</Button>
         </div>
       </div>
     );
@@ -233,7 +233,7 @@ const DoctorDetail = () => {
                   <Star size={16} fill="white" stroke="none" />
                   <span className="ml-1">{doctor.rating}</span>
                   <span className="mx-2">•</span>
-                  <span>{doctor.experience} experience</span>
+                  <span>{doctor.experience} expérience</span>
                 </div>
               </div>
               <div className="mt-6 md:mt-0 md:ml-auto">
@@ -242,7 +242,7 @@ const DoctorDetail = () => {
                   size="lg"
                   onClick={() => setIsBookingModalOpen(true)}
                 >
-                  Book Appointment
+                  Réservé un rendez-vous
                 </Button>
               </div>
             </div>
@@ -252,40 +252,40 @@ const DoctorDetail = () => {
           <div className="p-6 md:p-8">
             <div className="grid md:grid-cols-3 gap-8">
               <div className="md:col-span-2">
-                <h2 className="text-xl font-semibold mb-4">About</h2>
+                <h2 className="text-xl font-semibold mb-4">A propos</h2>
                 <p className="text-gray-700 mb-6">{doctor.bio}</p>
 
-                <h2 className="text-xl font-semibold mb-4">Specializations</h2>
+                <h2 className="text-xl font-semibold mb-4">Spécialités</h2>
                 <div className="flex flex-wrap gap-2 mb-6">
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                     {doctor.specialty?.name}
                   </span>
                   <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                    General Consultation
+                  Consultation générale
                   </span>
                 </div>
 
-                <h2 className="text-xl font-semibold mb-4">Education & Experience</h2>
+                <h2 className="text-xl font-semibold mb-4">Éducation et expérience</h2>
                 <div className="mb-6 space-y-4">
                   <div className="flex">
                     <div className="flex-shrink-0 h-4 w-4 mt-1 rounded-full bg-medical-primary"></div>
                     <div className="ml-3">
-                      <p className="font-medium">About {doctor.user?.name || 'the Doctor'}</p>
-                      <p className="text-gray-600 text-sm">{doctor.bio || 'No biography available.'}</p>
+                      <p className="font-medium">A propos de {doctor.user?.name || 'le Docteur'}</p>
+                      <p className="text-gray-600 text-sm">{doctor.bio || 'Aucune biographie disponible.'}</p>
                     </div>
                   </div>
                   <div className="flex">
                     <div className="flex-shrink-0 h-4 w-4 mt-1 rounded-full bg-medical-primary"></div>
                     <div className="ml-3">
-                      <p className="font-medium">Residency</p>
-                      <p className="text-gray-600 text-sm">City Hospital</p>
+                      <p className="font-medium">Residence</p>
+                      <p className="text-gray-600 text-sm">Hôpital de la ville</p>
                     </div>
                   </div>
                   <div className="flex">
                     <div className="flex-shrink-0 h-4 w-4 mt-1 rounded-full bg-medical-primary"></div>
                     <div className="ml-3">
-                      <p className="font-medium">Professional Experience</p>
-                      <p className="text-gray-600 text-sm">{doctor.experience || `${doctor.yearsOfExperience || 0} years of experience as ${doctor.specialty?.name || 'Medical'} Specialist`}</p>
+                      <p className="font-medium">Expérience professionnelle</p>
+                      <p className="text-gray-600 text-sm">{doctor.experience || `${doctor.yearsOfExperience || 0} ans d'expérience comme ${doctor.specialty?.name || 'Medical'} Specialist`}</p>
                     </div>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ const DoctorDetail = () => {
 
               <div>
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <h2 className="text-lg font-medium mb-4">Contact Information</h2>
+                  <h2 className="text-lg font-medium mb-4">Informations de contact</h2>
                   <div className="space-y-3">
                     <div className="flex items-center">
                       <Phone size={18} className="text-medical-primary mr-3" />
@@ -306,7 +306,7 @@ const DoctorDetail = () => {
                   </div>
 
                   <div className="mt-6 pt-6 border-t border-gray-200">
-                    <h3 className="font-medium mb-2">Working Hours</h3>
+                    <h3 className="font-medium mb-2">Heures de travail</h3>
                     <div className="text-sm space-y-2">
                       {Object.entries(formatWorkingHours(doctor)).map(([day, hours]) => (
                         <div key={day} className="flex justify-between">
@@ -318,14 +318,14 @@ const DoctorDetail = () => {
 
                     {doctor.doctorAbsences && doctor.doctorAbsences.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-gray-200">
-                        <h3 className="font-medium mb-2 text-red-600">Upcoming Time Off</h3>
+                        <h3 className="font-medium mb-2 text-red-600">Congé à venir</h3>
                         <div className="text-sm space-y-2">
                           {doctor.doctorAbsences.map((absence) => (
                             <div key={absence.id} className="flex justify-between">
                               <span className="text-gray-600">{absence.startDate === absence.endDate ?
                                 absence.startDate :
                                 `${absence.startDate} - ${absence.endDate}`}</span>
-                              <span className="text-red-600">Not Available</span>
+                              <span className="text-red-600">Non disponible</span>
                             </div>
                           ))}
                         </div>
@@ -343,9 +343,9 @@ const DoctorDetail = () => {
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Book Appointment with {doctor.user?.name}</DialogTitle>
+            <DialogTitle>Réservé un rendez-vous avec {doctor.user?.name}</DialogTitle>
             <DialogDescription>
-              Fill in the details below to schedule your appointment.
+              Remplissez les détails ci-dessous pour planifier votre rendez-vous.
             </DialogDescription>
           </DialogHeader>
 
@@ -353,7 +353,7 @@ const DoctorDetail = () => {
             <div className="grid gap-4 py-4">
               {isAuthenticated && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Who is this appointment for?</label>
+                  <label className="text-sm font-medium">Pour qui est ce rendez-vous?</label>
                   <div className="flex space-x-4">
                     <Button
                       type="button"
@@ -361,7 +361,7 @@ const DoctorDetail = () => {
                       onClick={() => setBookingFor('self')}
                       className="flex-1"
                     >
-                      Myself
+                      Moi
                     </Button>
                     <Button
                       type="button"
@@ -369,7 +369,7 @@ const DoctorDetail = () => {
                       onClick={() => setBookingFor('other')}
                       className="flex-1"
                     >
-                      Someone Else
+                      Quelqu'un d'autre
                     </Button>
                   </div>
                 </div>
@@ -380,13 +380,13 @@ const DoctorDetail = () => {
                   <>
                     <div className="space-y-2">
                       <label htmlFor="patientName" className="text-sm font-medium">
-                        Full Name
+                        Nom complet
                       </label>
                       <Input
                         id="patientName"
                         value={patientName}
                         onChange={(e) => setPatientName(e.target.value)}
-                        placeholder="Enter full name"
+                        placeholder="Entrez le nom complet"
                         required
                       />
                     </div>
@@ -400,20 +400,20 @@ const DoctorDetail = () => {
                         type="email"
                         value={patientEmail}
                         onChange={(e) => setPatientEmail(e.target.value)}
-                        placeholder="Enter email"
+                        placeholder="Entrez l'email"
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
                       <label htmlFor="patientPhone" className="text-sm font-medium">
-                        Phone Number
+                        Numéro de téléphone
                       </label>
                       <Input
                         id="patientPhone"
                         value={patientPhone}
                         onChange={(e) => setPatientPhone(e.target.value)}
-                        placeholder="Enter phone number"
+                        placeholder="Entrez le numéro de téléphone"
                         required
                       />
                     </div>
@@ -423,10 +423,10 @@ const DoctorDetail = () => {
                 {bookingFor === 'self' && isAuthenticated && user && (
                   <div className="col-span-2">
                     <div className="bg-gray-50 p-4 rounded-md">
-                      <h4 className="font-medium mb-2">Your Information</h4>
+                      <h4 className="font-medium mb-2">Vos informations</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <span className="text-sm text-gray-500">Name</span>
+                          <span className="text-sm text-gray-500">Nom</span>
                           <p className="font-medium">{user.name}</p>
                         </div>
                         <div>
@@ -434,8 +434,8 @@ const DoctorDetail = () => {
                           <p className="font-medium">{user.email}</p>
                         </div>
                         <div>
-                          <span className="text-sm text-gray-500">Phone</span>
-                          <p className="font-medium">{user.phone || 'Not provided'}</p>
+                          <span className="text-sm text-gray-500">Téléphone</span>
+                          <p className="font-medium">{user.phone || 'Non fourni'}</p>
                         </div>
                       </div>
                     </div>
@@ -446,7 +446,7 @@ const DoctorDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
-                    Appointment Date
+                    Date du rendez-vous
                   </label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -502,7 +502,7 @@ const DoctorDetail = () => {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
-                    Appointment Time
+                    Heure du rendez-vous
                   </label>
                   {selectedDate ? (
                     availableTimeSlots.length > 0 ? (
@@ -525,12 +525,12 @@ const DoctorDetail = () => {
                       </div>
                     ) : (
                       <div className="flex items-center justify-center h-20 bg-gray-100 rounded-md">
-                        <p className="text-gray-500 text-sm">No available time slots for this date</p>
+                        <p className="text-gray-500 text-sm">Aucun créneau horaire disponible pour cette date</p>
                       </div>
                     )
                   ) : (
                     <div className="flex items-center justify-center h-20 bg-gray-100 rounded-md">
-                      <p className="text-gray-500 text-sm">Please select a date first</p>
+                      <p className="text-gray-500 text-sm">Veuillez d'abord sélectionner une date</p>
                     </div>
                   )}
                 </div>
@@ -538,13 +538,13 @@ const DoctorDetail = () => {
 
               <div className="space-y-2">
                 <label htmlFor="reason" className="text-sm font-medium">
-                  Reason for Visit
+                  Motif de la consultation
                 </label>
                 <Textarea
                   id="reason"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Briefly describe your symptoms or reason for consultation"
+                  placeholder="Décrivez brièvement vos symptômes ou la raison de votre consultation"
                   required
                 />
               </div>
@@ -557,7 +557,7 @@ const DoctorDetail = () => {
                 onClick={() => setIsBookingModalOpen(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                Annuler
               </Button>
               <Button
                 type="submit"
@@ -566,9 +566,9 @@ const DoctorDetail = () => {
                 {isSubmitting ? (
                   <>
                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                    Processing...
+                    Traitement...
                   </>
-                ) : "Book Appointment"}
+                ) : "Prendre rendez-vous"}
               </Button>
             </DialogFooter>
           </form>

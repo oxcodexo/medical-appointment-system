@@ -31,8 +31,8 @@ const PatientDashboard = () => {
       } catch (error) {
         console.error("Error loading appointments:", error);
         toast({
-          title: "Failed to load appointments",
-          description: "There was an error loading your appointments. Please try again later.",
+          title: "Erreur lors du chargement des rendez-vous",
+          description: "Il y a eu une erreur lors du chargement de vos rendez-vous. Veuillez essayer plus tard.",
           variant: "destructive"
         });
       } finally {
@@ -53,10 +53,10 @@ const PatientDashboard = () => {
       a.id === updatedAppointment.id ? updatedAppointment : a
     ));
     toast({
-      title: "Appointment Updated",
+      title: "Rendez-vous mis à jour",
       description: updatedAppointment.status === AppointmentStatus.CANCELED
-        ? "Your appointment has been canceled."
-        : "Appointment details have been updated."
+        ? "Votre rendez-vous a été annulé."
+        : "Les détails de votre rendez-vous ont été mis à jour."
     });
   };
 
@@ -75,13 +75,13 @@ const PatientDashboard = () => {
   const getStatusBadge = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.CONFIRMED:
-        return <Badge className="bg-blue-100 text-blue-800">Confirmed</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">Confirmé</Badge>;
       case AppointmentStatus.PENDING:
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
       case AppointmentStatus.COMPLETED:
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Terminé</Badge>;
       case AppointmentStatus.CANCELED:
-        return <Badge className="bg-red-100 text-red-800">Canceled</Badge>;
+        return <Badge className="bg-red-100 text-red-800">Annulé</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -98,29 +98,29 @@ const PatientDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Patient Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Tableau de bord du patient</h1>
 
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold">Welcome, {user?.name}</h2>
-              <p className="text-gray-600">Here's an overview of your appointments and health information</p>
+              <h2 className="text-xl font-semibold">Bienvenue, {user?.name}</h2>
+              <p className="text-gray-600">Voici un aperçu de vos rendez-vous et de vos informations de santé</p>
             </div>
-            <Button onClick={() => navigate('/doctors')} >Book New Appointment</Button>
+            <Button onClick={() => navigate('/doctors')} >Prendre un rendez-vous</Button>
           </div>
         </div>
 
         <Tabs defaultValue="upcoming" className="w-full">
           <TabsList className="grid grid-cols-2 w-[400px] mb-8">
-            <TabsTrigger value="upcoming">Upcoming Appointments</TabsTrigger>
-            <TabsTrigger value="past">Past Appointments</TabsTrigger>
+            <TabsTrigger value="upcoming">Rendez-vous à venir</TabsTrigger>
+            <TabsTrigger value="past">Rendez-vous passés</TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming">
             <Card>
               <CardHeader>
-                <CardTitle>Upcoming Appointments</CardTitle>
-                <CardDescription>Your scheduled appointments</CardDescription>
+                <CardTitle>Rendez-vous à venir</CardTitle>
+                <CardDescription>Vos rendez-vous planifiés</CardDescription>
               </CardHeader>
               <CardContent>
                 {getUpcomingAppointments().length > 0 ? (
@@ -157,8 +157,8 @@ const PatientDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">You don't have any upcoming appointments.</p>
-                    <Button onClick={() => navigate('/doctors')} className="mt-4">Book Appointment</Button>
+                    <p className="text-gray-500">Vous n'avez pas de rendez-vous à venir.</p>
+                    <Button onClick={() => navigate('/doctors')} className="mt-4">Prendre un rendez-vous</Button>
                   </div>
                 )}
               </CardContent>
@@ -168,8 +168,8 @@ const PatientDashboard = () => {
           <TabsContent value="past">
             <Card>
               <CardHeader>
-                <CardTitle>Past Appointments</CardTitle>
-                <CardDescription>Your appointment history</CardDescription>
+                <CardTitle>Rendez-vous passés</CardTitle>
+                <CardDescription>Historique de vos rendez-vous</CardDescription>
               </CardHeader>
               <CardContent>
                 {getPastAppointments().length > 0 ? (
@@ -206,7 +206,7 @@ const PatientDashboard = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">You don't have any past appointments.</p>
+                    <p className="text-gray-500">Vous n'avez pas de rendez-vous passés.</p>
                   </div>
                 )}
               </CardContent>

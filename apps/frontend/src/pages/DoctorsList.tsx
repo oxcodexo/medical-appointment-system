@@ -100,7 +100,7 @@ const DoctorsList = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Find a Doctor</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Trouver un médecin</h1>
 
         {/* Search and filter form */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
@@ -110,7 +110,7 @@ const DoctorsList = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                 <Input
                   type="text"
-                  placeholder="Search doctors by name"
+                  placeholder="Rechercher un médecin par nom"
                   value={localSearchQuery}
                   onChange={(e) => setLocalSearchQuery(e.target.value)}
                   className="pl-10"
@@ -122,7 +122,7 @@ const DoctorsList = () => {
                 onValueChange={setLocalSpecialty}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter by specialty" />
+                  <SelectValue placeholder="Filtrer par spécialité" />
                 </SelectTrigger>
                 <SelectContent>
                   {specialties.length > 0 ? (
@@ -141,10 +141,10 @@ const DoctorsList = () => {
 
               <div className="flex space-x-2">
                 <Button type="submit" className="flex-1">
-                  Apply Filters
+                  Appliquer les filtres
                 </Button>
                 <Button type="button" variant="outline" onClick={handleReset}>
-                  Reset
+                  Réinitialiser
                 </Button>
               </div>
             </div>
@@ -160,9 +160,9 @@ const DoctorsList = () => {
             {/* Results summary */}
             <div className="mb-6">
               <p className="text-gray-700">
-                {filteredDoctors.length} {filteredDoctors.length === 1 ? 'doctor' : 'doctors'} found
-                {searchQuery && ` for "${searchQuery}"`}
-                {specialtyFilter && ` in ${specialtyFilter}`}
+                {filteredDoctors.length} {filteredDoctors.length === 1 ? 'médecin' : 'médecins'} trouvés
+                {searchQuery && ` pour "${searchQuery}"`}
+                {specialtyFilter && ` dans ${specialtyFilter}`}
               </p>
             </div>
 
@@ -197,10 +197,10 @@ const DoctorsList = () => {
                           </div>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mt-4 line-clamp-2">{doctor.bio || 'No bio available'}</p>
+                      <p className="text-sm text-gray-600 mt-4 line-clamp-2">{doctor.bio || 'Aucune biographie disponible'}</p>
                       <div className="mt-4">
                         <Link to={`/doctors/${doctor.id}`}>
-                          <Button variant="default" className="w-full">View Profile</Button>
+                          <Button variant="default" className="w-full">Voir le profil</Button>
                         </Link>
                       </div>
                     </div>
@@ -209,11 +209,11 @@ const DoctorsList = () => {
               </div>
             ) : (
               <div className="bg-white p-12 rounded-lg shadow text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No doctors found</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun médecin trouvé</h3>
                 <p className="text-gray-600 mb-6">
-                  Try adjusting your search or filter criteria.
+                  Essayez d'ajuster votre recherche ou vos critères de filtre.
                 </p>
-                <Button onClick={handleReset}>Clear Filters</Button>
+                <Button onClick={handleReset}>Réinitialiser les filtres</Button>
               </div>
             )}
           </>

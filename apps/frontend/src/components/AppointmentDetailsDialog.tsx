@@ -83,8 +83,8 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
       } catch (error) {
         console.error('Error fetching appointment details:', error);
         toast({
-          title: "Error",
-          description: "Failed to load appointment details",
+          title: "Erreur",
+          description: "Échec du chargement des détails de l'appointment",
           variant: "destructive"
         });
       }
@@ -245,8 +245,8 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
    */
   const handleSuccessfulUpdate = (status: AppointmentStatus) => {
     toast({
-      title: "Success",
-      description: "Appointment updated successfully",
+      title: "Succès",
+      description: "Rendez-vous mis à jour avec succès",
       variant: "default"
     });
 
@@ -272,8 +272,8 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
   const handleUpdateError = (error: ApiError) => {
     console.error('Error updating appointment:', error);
     toast({
-      title: "Error",
-      description: error.message || "Failed to update appointment",
+      title: "Erreur",
+      description: error.message || "Échec de la mise à jour du rendez-vous",
       variant: "destructive"
     });
   };
@@ -281,13 +281,13 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <Badge className="bg-blue-100 text-blue-800">Confirmed</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800">Confirmé</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
       case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+        return <Badge className="bg-green-100 text-green-800">Terminé</Badge>;
       case 'canceled':
-        return <Badge className="bg-red-100 text-red-800">Canceled</Badge>;
+        return <Badge className="bg-red-100 text-red-800">Annulé</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -297,7 +297,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-fit h-[90%] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Appointment Details</DialogTitle>
+          <DialogTitle>Détails du rendez-vous</DialogTitle>
         </DialogHeader>
 
         <div className="flex w-full gap-8">
@@ -305,7 +305,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
             {/* Appointment Info */}
             <div className="space-y-4 border-2 p-2 rounded">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Appointment Information</h4>
+                <h4 className="font-medium text-sm">Informations du rendez-vous</h4>
                 {getStatusBadge(localAppointment.status)}
               </div>
 
@@ -321,7 +321,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
                 <div className="space-y-1">
                   <div className="flex items-center text-sm text-gray-500">
                     <Clock className="w-4 h-4 mr-2" />
-                    Time
+                    Heure
                   </div>
                   <p className="font-medium">{localAppointment.time}</p>
                 </div>
@@ -330,13 +330,13 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
 
             {/* Patient Info */}
             <div className="space-y-4  border-2 p-2 rounded">
-              <h4 className="font-medium text-sm">Patient Information</h4>
+              <h4 className="font-medium text-sm">Informations du patient</h4>
 
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center text-sm text-gray-500">
                     <User className="w-4 h-4 mr-2" />
-                    Patient Name
+                    Nom du patient
                   </div>
                   <p className="font-medium">{localAppointment.patientName}</p>
                 </div>
@@ -345,7 +345,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
                   <div className="space-y-1">
                     <div className="flex items-center text-sm text-gray-500">
                       <Phone className="w-4 h-4 mr-2" />
-                      Phone
+                      Téléphone
                     </div>
                     <p className="font-medium">{localAppointment.patientPhone}</p>
                   </div>
@@ -363,7 +363,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
 
             {/* Appointment Reason */}
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">Reason for Visit</h4>
+              <h4 className="font-medium text-sm">Motif de la visite</h4>
               <p className="text-sm p-3 bg-gray-50 rounded-md">{localAppointment.reason}</p>
             </div>
           </div>
@@ -372,16 +372,16 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
             {/* Status Update (only for doctor/admin) */}
             {(isDoctor || isAdmin) && (
               <div className="space-y-2">
-                <Label htmlFor="status">Update Status</Label>
+                <Label htmlFor="status">Mettre à jour le statut</Label>
                 <Select value={status} onValueChange={handleStatusChange}>
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={AppointmentStatus.PENDING}>Pending</SelectItem>
-                    <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmed</SelectItem>
-                    <SelectItem value={AppointmentStatus.COMPLETED}>Completed</SelectItem>
-                    <SelectItem value={AppointmentStatus.CANCELED}>Canceled</SelectItem>
+                    <SelectItem value={AppointmentStatus.PENDING}>En attente</SelectItem>
+                    <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmé</SelectItem>
+                    <SelectItem value={AppointmentStatus.COMPLETED}>Terminé</SelectItem>
+                    <SelectItem value={AppointmentStatus.CANCELED}>Annulé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -392,14 +392,14 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
               <div className="flex items-center">
                 <Label htmlFor="notes" className="flex items-center">
                   <FileText className="w-4 h-4 mr-2" />
-                  {canEditMedicalDetails ? 'Medical Notes' : 'Notes'}
+                  {canEditMedicalDetails ? 'Notes médicales' : 'Notes'}
                 </Label>
               </div>
               <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => canEditMedicalDetails && setNotes(e.target.value)}
-                placeholder={canEditMedicalDetails ? "Add medical notes here..." : "No notes available"}
+                placeholder={canEditMedicalDetails ? "Ajoutez des notes médicales ici..." : "Aucune note disponible"}
                 className="min-h-[100px]"
                 disabled={!canEditMedicalDetails}
               />
@@ -409,22 +409,22 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
             {canEditMedicalDetails && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="diagnosis">Diagnosis</Label>
+                  <Label htmlFor="diagnosis">Diagnostique</Label>
                   <Textarea
                     id="diagnosis"
                     value={diagnosis}
                     onChange={(e) => setDiagnosis(e.target.value)}
-                    placeholder="Enter diagnosis..."
+                    placeholder="Entrez le diagnostique..."
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="treatment">Treatment</Label>
+                  <Label htmlFor="treatment">Traitement</Label>
                   <Textarea
                     id="treatment"
                     value={treatment}
                     onChange={(e) => setTreatment(e.target.value)}
-                    placeholder="Enter treatment plan..."
+                    placeholder="Entrez le traitement..."
                   />
                 </div>
 
@@ -434,7 +434,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
                     id="prescriptions"
                     value={prescriptions}
                     onChange={(e) => setPrescriptions(e.target.value)}
-                    placeholder="Enter prescriptions..."
+                    placeholder="Entrez les prescriptions..."
                   />
                 </div>
               </>
@@ -448,14 +448,14 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Close
+            Fermer
           </Button>
           {canEditMedicalDetails && (
             <Button
               onClick={saveAppointment}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isSubmitting ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
             </Button>
           )}
           {user?.role === 'patient' && status !== AppointmentStatus.CANCELED && (
@@ -464,7 +464,7 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
               onClick={cancelAppointment}
               disabled={isSubmitting}
             >
-              Cancel Appointment
+              Annuler le rendez-vous
             </Button>
           )}
         </DialogFooter>

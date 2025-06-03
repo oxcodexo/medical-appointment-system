@@ -62,8 +62,8 @@ const ResponsableDashboard = () => {
       } catch (doctorError) {
         console.error('Error fetching managed doctors:', doctorError);
         toast({
-          title: "Error",
-          description: "Failed to load managed doctor data",
+          title: "Erreur",
+          description: "Échec du chargement des données du médecin géré",
           variant: "destructive"
         });
       } finally {
@@ -90,15 +90,15 @@ const ResponsableDashboard = () => {
         ));
 
         toast({
-          title: "Status updated",
-          description: `Appointment status changed to ${newStatus}.`,
+          title: "Statut mis à jour",
+          description: `Le statut du rendez-vous a été changé en ${newStatus}.`,
         });
       }
     } catch (error) {
       console.error('Error updating appointment status:', error);
       toast({
-        title: "Error updating status",
-        description: "There was a problem updating the appointment status.",
+        title: "Erreur lors de la mise à jour du statut",
+        description: "Il y a eu un problème lors de la mise à jour du statut du rendez-vous.",
         variant: "destructive",
       });
     }
@@ -107,17 +107,17 @@ const ResponsableDashboard = () => {
   const getStatusBadgeVariant = (status: AppointmentStatus) => {
     switch (status) {
       case AppointmentStatus.PENDING:
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">Pending</Badge>;
+        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">En attente</Badge>;
       case AppointmentStatus.CONFIRMED:
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">Confirmed</Badge>;
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">Confirmé</Badge>;
       case AppointmentStatus.COMPLETED:
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">Completed</Badge>;
+        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">Terminé</Badge>;
       case AppointmentStatus.CANCELED:
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">Canceled</Badge>;
+        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">Annulé</Badge>;
       case AppointmentStatus.NO_SHOW:
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">No Show</Badge>;
+        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300">Non présent</Badge>;
       case AppointmentStatus.REJECTED:
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">Rejected</Badge>;
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300">Refusé</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -142,14 +142,14 @@ const ResponsableDashboard = () => {
         appointment.id === appointmentId ? updatedAppointment : appointment
       ));
       toast({
-        title: "Appointment Restored",
-        description: "The appointment has been restored to pending status."
+        title: "Rendez-vous restauré",
+        description: "Le rendez-vous a été restauré au statut en attente."
       });
     } catch (error) {
       console.error('Error restoring appointment:', error);
       toast({
-        title: "Error restoring appointment",
-        description: "There was a problem restoring the appointment.",
+        title: "Erreur lors de la restauration du rendez-vous",
+        description: "Il y a eu un problème lors de la restauration du rendez-vous.",
         variant: "destructive",
       });
     }
@@ -174,8 +174,8 @@ const ResponsableDashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h2>
-          <p className="text-gray-600 mb-6">You don't have permission to access this page.</p>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Accès refusé</h2>
+          <p className="text-gray-600 mb-6">Vous n'avez pas la permission d'accéder à cette page.</p>
         </div>
       </div>
     );
@@ -187,22 +187,22 @@ const ResponsableDashboard = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Doctor Manager Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome to your dashboard</p>
+            <h1 className="text-3xl font-bold text-gray-900">Tableau de bord du gestionnaire de médecin</h1>
+            <p className="text-gray-600 mt-1">Bienvenue sur votre tableau de bord</p>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Account Setup Required</CardTitle>
+              <CardTitle>Configuration du compte requise</CardTitle>
               <CardDescription>
-                Your account needs to be linked to a doctor profile before you can manage appointments.
+                Votre compte doit être lié à un profil de médecin avant que vous puissiez gérer les rendez-vous.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <p className="mb-4">Please contact an administrator to assign you to a doctor profile.</p>
+                <p className="mb-4">Veuillez contacter un administrateur pour affecter un profil de médecin à votre compte.</p>
                 <Button variant="outline" onClick={() => { }}>
-                  Request Doctor Assignment
+                  Demander l'affectation d'un profil de médecin
                 </Button>
               </div>
             </CardContent>
@@ -216,45 +216,45 @@ const ResponsableDashboard = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Doctor Manager Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Tableau de bord du gestionnaire de médecin</h1>
           {doctor && (
-            <p className="text-gray-600 mt-1">Managing appointments for {doctor.user?.name}</p>
+            <p className="text-gray-600 mt-1">Gestion des rendez-vous pour {doctor.user?.name}</p>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Pending Appointments</CardTitle>
+              <CardTitle className="text-md font-medium">Rendez-vous en attente</CardTitle>
               <Clock className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{getPendingCount()}</div>
               <p className="text-xs text-muted-foreground">
-                Appointments awaiting confirmation
+                Rendez-vous en attente de confirmation
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Confirmed Appointments</CardTitle>
+              <CardTitle className="text-md font-medium">Rendez-vous confirmés</CardTitle>
               <Calendar className="h-4 w-4 text-medical-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{getConfirmedCount()}</div>
-              <p className="text-xs text-muted-foreground">Upcoming appointments</p>
+              <p className="text-xs text-muted-foreground">Rendez-vous confirmés</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-md font-medium">Completed</CardTitle>
+              <CardTitle className="text-md font-medium">Rendez-vous terminés</CardTitle>
               <FileText className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{getCompletedCount()}</div>
-              <p className="text-xs text-muted-foreground">Past appointments</p>
+              <p className="text-xs text-muted-foreground">Rendez-vous terminés</p>
             </CardContent>
           </Card>
         </div>
@@ -262,24 +262,24 @@ const ResponsableDashboard = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Manage Appointments</CardTitle>
+              <CardTitle>Gestion des rendez-vous</CardTitle>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder="Filtrer par statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Appointments</SelectItem>
-                  <SelectItem value={AppointmentStatus.PENDING}>Pending</SelectItem>
-                  <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmed</SelectItem>
-                  <SelectItem value={AppointmentStatus.COMPLETED}>Completed</SelectItem>
-                  <SelectItem value={AppointmentStatus.CANCELED}>Canceled</SelectItem>
-                  <SelectItem value={AppointmentStatus.NO_SHOW}>No Show</SelectItem>
-                  <SelectItem value={AppointmentStatus.REJECTED}>Rejected</SelectItem>
+                  <SelectItem value="all">Tous les rendez-vous</SelectItem>
+                  <SelectItem value={AppointmentStatus.PENDING}>En attente</SelectItem>
+                  <SelectItem value={AppointmentStatus.CONFIRMED}>Confirmé</SelectItem>
+                  <SelectItem value={AppointmentStatus.COMPLETED}>Terminé</SelectItem>
+                  <SelectItem value={AppointmentStatus.CANCELED}>Annulé</SelectItem>
+                  <SelectItem value={AppointmentStatus.NO_SHOW}>Non présent</SelectItem>
+                  <SelectItem value={AppointmentStatus.REJECTED}>Refusé</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <CardDescription>
-              View and manage all appointments for {doctor?.user?.name}.
+              Gestion des rendez-vous pour {doctor?.user?.name}.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -293,9 +293,9 @@ const ResponsableDashboard = () => {
                   <TableRow>
                     <TableHead>Patient</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Reason</TableHead>
+                    <TableHead>Heure</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Raison</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -335,7 +335,7 @@ const ResponsableDashboard = () => {
                               onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CONFIRMED)}
                             >
                               <Check className="h-4 w-4 mr-1" />
-                              Confirm
+                              Confirmer
                             </Button>
                             <Button
                               variant="outline"
@@ -344,7 +344,7 @@ const ResponsableDashboard = () => {
                               onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CANCELED)}
                             >
                               <X className="h-4 w-4 mr-1" />
-                              Cancel
+                              Annuler
                             </Button>
                           </div>
                         ) : appointment.status === AppointmentStatus.CONFIRMED ? (
@@ -356,7 +356,7 @@ const ResponsableDashboard = () => {
                               onClick={() => handleStatusChange(appointment.id, AppointmentStatus.COMPLETED)}
                             >
                               <Check className="h-4 w-4 mr-1" />
-                              Complete
+                              Terminer
                             </Button>
                             <Button
                               variant="outline"
@@ -365,7 +365,7 @@ const ResponsableDashboard = () => {
                               onClick={() => handleStatusChange(appointment.id, AppointmentStatus.CANCELED)}
                             >
                               <X className="h-4 w-4 mr-1" />
-                              Cancel
+                              Annuler
                             </Button>
                           </div>
                         ) : (
@@ -376,10 +376,10 @@ const ResponsableDashboard = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => { }}>View Details</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { }}>Voir les details</DropdownMenuItem>
                               {appointment.status === AppointmentStatus.CANCELED && (
                                 <DropdownMenuItem onClick={() => handleRestoreAppointment(appointment.id)}>
-                                  Restore to Pending
+                                  Restaurer en attente
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -392,7 +392,7 @@ const ResponsableDashboard = () => {
               </Table>
             ) : (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">No appointments found.</p>
+                <p className="text-muted-foreground">Aucun rendez-vous trouvé.</p>
               </div>
             )}
           </CardContent>

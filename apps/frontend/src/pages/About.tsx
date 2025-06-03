@@ -9,38 +9,48 @@ const About = () => {
       <section className="bg-gradient-to-br from-blue-50 to-cyan-50 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About MediBook
+            À propos de <span className="text-medical-primary">I-SGRM</span>
           </h1>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Making healthcare accessible and convenient through our appointment booking platform. 
-            Connecting patients with quality healthcare providers.
+            Rendre les soins de santé accessibles et pratiques grâce à notre
+            plateforme de prise de rendez-vous. Connecter les patients à des
+            professionnels de santé de qualité.
           </p>
         </div>
       </section>
-      
+
       {/* Mission Section */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Notre mission
+              </h2>
               <p className="text-lg text-gray-700 mb-6">
-                At MediBook, our mission is to bridge the gap between patients and healthcare providers,
-                making medical appointments accessible, efficient, and stress-free for everyone.
+                Chez{" "}
+                <span className="text-medical-primary font-bold">I-SGRM</span>,
+                notre mission est de combler le fossé entre les patients et les
+                professionnels de santé, en rendant les rendez-vous médicaux
+                accessibles, efficaces et sans stress pour tous.
               </p>
               <p className="text-lg text-gray-700 mb-6">
-                We believe that everyone deserves easy access to healthcare, without unnecessary barriers.
-                That's why we've designed a platform that allows patients to book appointments with just a few clicks,
-                no account required.
+                Nous croyons que tout le monde mérite un accès facile aux soins
+                de santé, sans barrières inutiles. C’est pourquoi nous avons
+                conçu une plateforme qui permet aux patients de prendre
+                rendez-vous en quelques clics, sans avoir besoin de créer un
+                compte.
               </p>
               <p className="text-lg text-gray-700">
-                For those who choose to register, we offer additional features like appointment tracking
-                and history, making it even easier to manage your healthcare journey.
+                Pour ceux qui choisissent de s’inscrire, nous offrons des
+                fonctionnalités supplémentaires comme le suivi des rendez-vous
+                et l’historique, rendant la gestion de votre parcours de soins
+                encore plus simple.
               </p>
             </div>
             <div className="rounded-lg overflow-hidden shadow-xl">
-              <img 
-                src="/placeholder.svg" 
+              <img
+                src="/vectors/booking-appointements-isgrm.svg"
                 alt="Healthcare professionals"
                 className="w-full h-auto"
               />
@@ -48,91 +58,128 @@ const About = () => {
           </div>
         </div>
       </section>
-      
+
       {/* How It Works */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">How MediBook Works</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            Comment fonctionne{" "}
+            <span className="text-medical-primary font-bold">I-SGRM</span>
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-medical-primary text-xl font-bold">1</span>
+                <span className="text-medical-primary text-xl font-bold">
+                  1
+                </span>
               </div>
-              <h3 className="text-xl font-semibold text-center mb-4">Find a Doctor</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Trouver un médecin
+              </h3>
               <p className="text-gray-700">
-                Search through our network of qualified healthcare providers by specialty, location, or availability.
-                View detailed profiles to make an informed choice.
+                Recherchez dans notre réseau de professionnels de santé
+                qualifiés par spécialité, localisation ou disponibilité.
+                Consultez des profils détaillés pour faire un choix éclairé.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-medical-primary text-xl font-bold">2</span>
+                <span className="text-medical-primary text-xl font-bold">
+                  2
+                </span>
               </div>
-              <h3 className="text-xl font-semibold text-center mb-4">Book Your Appointment</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Prendre rendez-vous
+              </h3>
               <p className="text-gray-700">
-                Select a convenient date and time that works for you. Fill out a simple form with your
-                information and the reason for your visit.
+                Sélectionnez une date et une heure qui vous conviennent.
+                Remplissez un formulaire simple avec vos informations et le
+                motif de votre visite.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md">
               <div className="w-12 h-12 bg-medical-light rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-medical-primary text-xl font-bold">3</span>
+                <span className="text-medical-primary text-xl font-bold">
+                  3
+                </span>
               </div>
-              <h3 className="text-xl font-semibold text-center mb-4">Visit Your Doctor</h3>
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Visitez votre médecin
+              </h3>
               <p className="text-gray-700">
-                Receive confirmation of your appointment via email. Visit your doctor at the
-                scheduled time and get the care you need.
+                Recevez la confirmation de votre rendez-vous par e-mail.
+                Rendez-vous chez votre médecin à l’heure prévue et recevez les
+                soins dont vous avez besoin.
               </p>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* For Doctors Section */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="rounded-lg overflow-hidden shadow-xl md:order-2">
-              <img 
-                src="/placeholder.svg" 
+              <img
+                src="/vectors/booking-appointements-isgrm-1.svg"
                 alt="Doctor using computer"
-                className="w-full h-auto"
+                className="w-full h-full"
               />
             </div>
             <div className="md:order-1">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">For Healthcare Providers</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Pour les professionnels de santé
+              </h2>
               <p className="text-lg text-gray-700 mb-6">
-                MediBook provides a streamlined appointment management system for doctors and their staff.
-                Our platform helps reduce no-shows, manage scheduling, and improve patient communications.
+                <span className="text-medical-primary font-bold">I-SGRM</span>{" "}
+                propose un système de gestion de rendez-vous simplifié pour les
+                médecins et leur personnel. Notre plateforme aide à réduire les
+                absences, à gérer la planification et à améliorer la
+                communication avec les patients.
               </p>
               <p className="text-lg text-gray-700 mb-6">
-                Each doctor is assigned a dedicated manager who handles their appointment scheduling,
-                ensuring a smooth experience for both patients and healthcare providers.
+                Chaque médecin se voit attribuer un gestionnaire dédié qui
+                s’occupe de la planification de ses rendez-vous, garantissant
+                une expérience fluide tant pour les patients que pour les
+                professionnels de santé.
               </p>
               <div className="mt-8">
-                <Button size="lg">Join Our Network</Button>
+                <Button size="lg">Rejoindre notre réseau</Button>
               </div>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* Call To Action */}
       <section className="py-16 bg-gradient-to-r from-medical-primary to-medical-secondary text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Book Your First Appointment?</h2>
+          <h2 className="text-3xl font-bold mb-6">
+            Prêt à prendre votre premier rendez-vous ?
+          </h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join thousands of satisfied patients who use MediBook for their healthcare needs.
+            Rejoignez des milliers de patients satisfaits qui utilisent{" "}
+            <span className="font-bold">I-SGRM</span> pour leurs besoins en
+            santé.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/doctors">
-              <Button size="lg" variant="secondary" className="bg-white text-medical-primary hover:bg-gray-100">
-                Find a Doctor
+              <Button
+                size="lg"
+                variant="secondary"
+                className="bg-white text-medical-primary hover:bg-gray-100"
+              >
+                Trouver un médecin
               </Button>
             </Link>
             <Link to="/register">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Create an Account
+              <Button
+                size="lg"
+                variant="secondary"
+                className="bg-white text-medical-primary hover:bg-gray-100"
+              >
+                Créer un compte
               </Button>
             </Link>
           </div>

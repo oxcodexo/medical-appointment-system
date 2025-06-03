@@ -21,8 +21,8 @@ const Login = () => {
     // Basic validation
     if (!email.trim()) {
       toast({
-        title: "Email required",
-        description: "Please enter your email address.",
+        title: "Email requis",
+        description: "Veuillez entrer votre adresse e-mail.",
         variant: "destructive",
       });
       return;
@@ -30,8 +30,8 @@ const Login = () => {
     
     if (!password) {
       toast({
-        title: "Password required",
-        description: "Please enter your password.",
+        title: "Mot de passe requis",
+        description: "Veuillez entrer votre mot de passe.",
         variant: "destructive",
       });
       return;
@@ -44,14 +44,14 @@ const Login = () => {
       
       if (success) {
         toast({
-          title: "Login successful!",
-          description: "Welcome back to MediBook.",
+          title: "Connexion réussie!",
+          description: "Bienvenue à nouveau sur I-SGRM.",
         });
         navigate('/dashboard');
       } else {
         toast({
-          title: "Login failed",
-          description: "Invalid email or password. Please try again.",
+          title: "Connexion échouée",
+          description: "Email ou mot de passe invalide. Veuillez réessayer.",
           variant: "destructive",
         });
       }
@@ -62,7 +62,7 @@ const Login = () => {
       const errorMessage = error instanceof Error ? error.message : "An error occurred. Please try again.";
       
       toast({
-        title: "Login failed",
+        title: "Connexion échouée",
         description: errorMessage,
         variant: "destructive",
       });
@@ -96,12 +96,12 @@ const Login = () => {
     <div className="min-h-screen bg-gray-50 py-12 flex flex-col justify-center">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          Log in to your account
+          Se connecter à votre compte
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
+          Ou{' '}
           <Link to="/register" className="font-medium text-medical-primary hover:text-medical-accent">
-            create a new account
+            créer un nouveau compte
           </Link>
         </p>
       </div>
@@ -111,7 +111,7 @@ const Login = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Adresse e-mail
               </label>
               <div className="mt-1">
                 <Input
@@ -130,7 +130,7 @@ const Login = () => {
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Mot de passe
               </label>
               <div className="mt-1">
                 <Input
@@ -150,7 +150,7 @@ const Login = () => {
             <div className="flex items-center justify-end">
               <div className="text-sm">
                 <a href="#" className="font-medium text-medical-primary hover:text-medical-accent">
-                  Forgot your password?
+                  Mot de passe oublié?
                 </a>
               </div>
             </div>
@@ -164,10 +164,10 @@ const Login = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
+                    Se connecter...
                   </>
                 ) : (
-                  'Sign in'
+                  'Se connecter'
                 )}
               </Button>
             </div>
@@ -179,7 +179,7 @@ const Login = () => {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">Or continue with demo accounts</span>
+                <span className="bg-white px-2 text-gray-500">Ou continuez avec des comptes de démonstration</span>
               </div>
             </div>
             
@@ -189,28 +189,28 @@ const Login = () => {
                 variant="outline"
                 onClick={loginAsPatient}
               >
-                Demo Patient Account
+                Compte patient de test
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={loginAsResponsable}
               >
-                Demo Doctor Manager Account
+                Compte responsable de test
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={loginAsDoctor}
               >
-                Demo Doctor Account
+                Compte médecin de test
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={loginAsAdmin}
               >
-                Demo Admin Account
+                Compte administrateur de test
               </Button>
             </div>
           </div>
