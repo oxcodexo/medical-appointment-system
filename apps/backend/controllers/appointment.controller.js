@@ -425,12 +425,12 @@ exports.updateStatus = async (req, res) => {
     // Prevent certain status transitions
     if (appointment.status === AppointmentStatus.COMPLETED && status !== AppointmentStatus.COMPLETED)
       return res.status(400).json({
-        message: 'Cannot change status of a completed appointment.'
+        message: "Impossible de changer le statut d'un rendez-vous terminé."
       });
 
     if (appointment.status === AppointmentStatus.CANCELED && status !== AppointmentStatus.CANCELED)
       return res.status(400).json({
-        message: 'Cannot change status of a canceled appointment.'
+        message: "Impossible de changer le statut d'un rendez-vous annulé."
       });
 
     // Store the previous status for notification purposes
