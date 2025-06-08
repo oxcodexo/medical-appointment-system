@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { User, Doctor } from '@medical-appointment-system/shared-types';
+import { User, Doctor, UserData, UserRole } from '@medical-appointment-system/shared-types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { userApi, authApi } from '@/lib/api';
+import userService from '@/services/user.service';
 
 interface UserFormDialogProps {
   open: boolean;
@@ -30,11 +30,11 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
   doctors,
   onUserSaved,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<UserData & { doctorId: string }>({
     name: '',
     email: '',
     password: '',
-    role: 'patient',
+    role: UserRole.PATIENT,
     doctorId: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,10 +46,10 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
     if (user) {
       // Get doctorId from the user object if it exists
       // This assumes there might be a relationship between user and doctor
-      const userDoctorId = user.role === 'doctor' || user.role === 'responsable' 
+      const userDoctorId = user.role === 'doctor' || user.role === 'responsable'
         ? user.id.toString() // For doctors, use their own ID
         : ''; // For other roles, no doctorId by default
-      
+
       setFormData({
         name: user.name,
         email: user.email,
@@ -62,7 +62,7 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         name: '',
         email: '',
         password: '',
-        role: 'patient',
+        role: UserRole.PATIENT,
         doctorId: '',
       });
     }
@@ -85,7 +85,7 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       setIsSubmitting(false);
       return;
     }
-    
+
     // Password validation for new users or password changes
     if ((isNewUser || formData.password) && formData.password) {
       // Password must be at least 8 characters with at least one uppercase, one lowercase, and one number
@@ -106,30 +106,21 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
       if (isNewUser) {
         // Create new user
-        response = await authApi.register(
-          formData.name,
-          formData.email,
-          formData.password,
-          formData.role
-        );
-
-        // If the user is a doctor or responsable and has a doctorId, update the user
-        // Note: We're not actually updating a doctorId property on the user
-        // Instead, we're creating an association in the backend
-        if (response.data && response.data.user &&
-          (formData.role === 'doctor' || formData.role === 'responsable') &&
-          formData.doctorId && formData.doctorId !== 'new') {
-          // Send the doctorId as a custom property that the backend will handle
-          await userApi.update(response.data.user.id, {
-            // The backend will handle this custom property
-            // TypeScript doesn't know about this property, but it's handled by the backend
-            // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
-            doctorId: parseInt(formData.doctorId)
-          });
+        const userData = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          doctorId: null,
+        };
+        if ((formData.role === 'doctor' || formData.role === 'responsable') && formData.doctorId && formData.doctorId !== 'new') {
+          userData.doctorId = parseInt(formData.doctorId);
         }
 
-        // If it's a doctor with 'new' doctorId, we would create a new doctor profile
-        // This would require additional API calls to the doctor API
+        console.log("userData", userData);
+        // If it's a doctor with 'new' doctorId, you would create a doctor profile after user creation (not implemented here)
+        // Placeholder for future doctor profile creation logic
+        response = await userService.createUser(userData);
       } else if (user) {
         // Update existing user
         const userData: {
@@ -152,15 +143,13 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         // Add doctorId if applicable
         if ((formData.role === 'doctor' || formData.role === 'responsable') &&
           formData.doctorId && formData.doctorId !== 'new') {
-          // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
           userData.doctorId = parseInt(formData.doctorId);
         } else if (formData.role !== 'doctor' && formData.role !== 'responsable') {
           // Remove doctorId if the role doesn't need it anymore
-          // @ts-ignore - Backend accepts this property even though it's not in the TypeScript interface
           userData.doctorId = null;
         }
 
-        response = await userApi.update(user.id, userData);
+        response = await userService.updateUser(user.id, userData);
       }
 
       toast({
@@ -177,12 +166,13 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
       // Close the dialog
       onOpenChange(false);
+      // eslint-disable-next-line
     } catch (error: any) {
       console.error('Error saving user:', error);
-      
+
       // Extract more specific error message if available
       let errorMessage = `Échec de la ${isNewUser ? 'création' : 'mise à jour'} de l'utilisateur.`;
-      
+
       if (error.response && error.response.data && error.response.data.message) {
         // Use the specific error message from the backend
         errorMessage = error.response.data.message;
@@ -190,7 +180,7 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         // Use the error message from the Error object
         errorMessage = error.message;
       }
-      
+
       toast({
         title: "Erreur",
         description: errorMessage,

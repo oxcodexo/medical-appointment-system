@@ -2,8 +2,10 @@ const validateRequest = {};
 
 // Validate user creation
 validateRequest.validateUserCreation = (req, res, next) => {
+  const { name, email, password, role } = req.body;
+  console.log("validateUserCreationvalidateUserCreation",name, email, password, role);
   // Required fields
-  if (!req.body.name || !req.body.email || !req.body.password || !req.body.role) {
+  if (!name || !email || !password || !role) {
     return res.status(400).json({
       message: "Name, email, password, and role are required fields!"
     });
@@ -11,14 +13,14 @@ validateRequest.validateUserCreation = (req, res, next) => {
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(req.body.email)) {
+  if (!emailRegex.test(email)) {
     return res.status(400).json({
       message: "Invalid email format!"
     });
   }
 
   // Validate password strength
-  if (req.body.password.length < 8) {
+  if (password.length < 8) {
     return res.status(400).json({
       message: "Password must be at least 8 characters long!"
     });
@@ -26,7 +28,7 @@ validateRequest.validateUserCreation = (req, res, next) => {
 
   // Validate role
   const validRoles = ['admin', 'doctor', 'patient', 'receptionist'];
-  if (!validRoles.includes(req.body.role)) {
+  if (!validRoles.includes(role)) {
     return res.status(400).json({
       message: "Role must be one of: admin, doctor, patient, receptionist"
     });
@@ -37,10 +39,11 @@ validateRequest.validateUserCreation = (req, res, next) => {
 
 // Validate user update
 validateRequest.validateUserUpdate = (req, res, next) => {
+  const { email, role } = req.body;
   // Validate email format if provided
-  if (req.body.email) {
+  if (email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(req.body.email)) {
+    if (!emailRegex.test(email)) {
       return res.status(400).json({
         message: "Invalid email format!"
       });
@@ -48,9 +51,9 @@ validateRequest.validateUserUpdate = (req, res, next) => {
   }
 
   // Validate role if provided
-  if (req.body.role) {
+  if (role) {
     const validRoles = ['admin', 'doctor', 'patient', 'receptionist'];
-    if (!validRoles.includes(req.body.role)) {
+    if (!validRoles.includes(role)) {
       return res.status(400).json({
         message: "Role must be one of: admin, doctor, patient, receptionist"
       });
@@ -62,6 +65,7 @@ validateRequest.validateUserUpdate = (req, res, next) => {
 
 // Validate user profile
 validateRequest.validateUserProfile = (req, res, next) => {
+  const { phone } = req.body;
   // At least one field should be provided
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({
@@ -70,9 +74,9 @@ validateRequest.validateUserProfile = (req, res, next) => {
   }
 
   // Validate phone number if provided
-  if (req.body.phone) {
+  if (phone) {
     const phoneRegex = /^\+?[0-9]{10,15}$/;
-    if (!phoneRegex.test(req.body.phone)) {
+    if (!phoneRegex.test(phone)) {
       return res.status(400).json({
         message: "Invalid phone number format!"
       });
@@ -84,17 +88,18 @@ validateRequest.validateUserProfile = (req, res, next) => {
 
 // Validate permission assignment
 validateRequest.validatePermissionAssignment = (req, res, next) => {
+  const { permissionId, expiresAt } = req.body;
   // Required fields
-  if (!req.body.permissionId) {
+  if (!permissionId) {
     return res.status(400).json({
       message: "Permission ID is required!"
     });
   }
 
   // Validate expiration date if provided
-  if (req.body.expiresAt) {
-    const expiresAt = new Date(req.body.expiresAt);
-    if (isNaN(expiresAt.getTime())) {
+  if (expiresAt) {
+    const expiresAtDate = new Date(expiresAt);
+    if (isNaN(expiresAtDate.getTime())) {
       return res.status(400).json({
         message: "Invalid expiration date format!"
       });
@@ -113,14 +118,15 @@ validateRequest.validatePermissionAssignment = (req, res, next) => {
 
 // Validate bulk user update
 validateRequest.validateBulkUserUpdate = (req, res, next) => {
+  const { ids, action } = req.body;
   // Required fields
-  if (!req.body.ids || !Array.isArray(req.body.ids) || req.body.ids.length === 0) {
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({
       message: "User IDs array is required!"
     });
   }
 
-  if (!req.body.action) {
+  if (!action) {
     return res.status(400).json({
       message: "Action is required!"
     });
@@ -128,7 +134,7 @@ validateRequest.validateBulkUserUpdate = (req, res, next) => {
 
   // Validate action
   const validActions = ['activate', 'deactivate'];
-  if (!validActions.includes(req.body.action)) {
+  if (!validActions.includes(action)) {
     return res.status(400).json({
       message: "Action must be one of: activate, deactivate"
     });
@@ -139,17 +145,18 @@ validateRequest.validateBulkUserUpdate = (req, res, next) => {
 
 // Validate notification creation
 validateRequest.validateNotificationCreation = (req, res, next) => {
+  const { userId, type, title, content, priority, channel, scheduledFor, expiresAt } = req.body;
   // Required fields
-  if (!req.body.userId || !req.body.type || !req.body.title || !req.body.content) {
+  if (!userId || !type || !title || !content) {
     return res.status(400).json({
       message: "User ID, type, title, and content are required fields!"
     });
   }
 
   // Validate priority if provided
-  if (req.body.priority) {
+  if (priority) {
     const validPriorities = ['low', 'normal', 'high', 'urgent'];
-    if (!validPriorities.includes(req.body.priority)) {
+    if (!validPriorities.includes(priority)) {
       return res.status(400).json({
         message: "Priority must be one of: low, normal, high, urgent"
       });
@@ -157,9 +164,9 @@ validateRequest.validateNotificationCreation = (req, res, next) => {
   }
 
   // Validate channel if provided
-  if (req.body.channel) {
+  if (channel) {
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    if (!validChannels.includes(req.body.channel)) {
+    if (!validChannels.includes(channel)) {
       return res.status(400).json({
         message: "Channel must be one of: in-app, email, sms, push"
       });
@@ -167,9 +174,9 @@ validateRequest.validateNotificationCreation = (req, res, next) => {
   }
 
   // Validate scheduled date if provided
-  if (req.body.scheduledFor) {
-    const scheduledFor = new Date(req.body.scheduledFor);
-    if (isNaN(scheduledFor.getTime())) {
+  if (scheduledFor) {
+    const scheduledForDate = new Date(scheduledFor);
+    if (isNaN(scheduledForDate.getTime())) {
       return res.status(400).json({
         message: "Invalid scheduled date format!"
       });
@@ -177,9 +184,9 @@ validateRequest.validateNotificationCreation = (req, res, next) => {
   }
 
   // Validate expiration date if provided
-  if (req.body.expiresAt) {
-    const expiresAt = new Date(req.body.expiresAt);
-    if (isNaN(expiresAt.getTime())) {
+  if (expiresAt) {
+    const expiresAtDate = new Date(expiresAt);
+    if (isNaN(expiresAtDate.getTime())) {
       return res.status(400).json({
         message: "Invalid expiration date format!"
       });
@@ -191,24 +198,25 @@ validateRequest.validateNotificationCreation = (req, res, next) => {
 
 // Validate notification from template
 validateRequest.validateNotificationFromTemplate = (req, res, next) => {
+  const { templateId, userId, variables, priority, channel, scheduledFor, expiresAt } = req.body;
   // Required fields
-  if (!req.body.templateId || !req.body.userId) {
+  if (!templateId || !userId) {
     return res.status(400).json({
       message: "Template ID and User ID are required fields!"
     });
   }
 
   // Validate variables if provided
-  if (req.body.variables && typeof req.body.variables !== 'object') {
+  if (variables && typeof variables !== 'object') {
     return res.status(400).json({
       message: "Variables must be an object!"
     });
   }
 
   // Validate priority if provided
-  if (req.body.priority) {
+  if (priority) {
     const validPriorities = ['low', 'normal', 'high', 'urgent'];
-    if (!validPriorities.includes(req.body.priority)) {
+    if (!validPriorities.includes(priority)) {
       return res.status(400).json({
         message: "Priority must be one of: low, normal, high, urgent"
       });
@@ -216,9 +224,9 @@ validateRequest.validateNotificationFromTemplate = (req, res, next) => {
   }
 
   // Validate channel if provided
-  if (req.body.channel) {
+  if (channel) {
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    if (!validChannels.includes(req.body.channel)) {
+    if (!validChannels.includes(channel)) {
       return res.status(400).json({
         message: "Channel must be one of: in-app, email, sms, push"
       });
@@ -226,9 +234,9 @@ validateRequest.validateNotificationFromTemplate = (req, res, next) => {
   }
 
   // Validate scheduled date if provided
-  if (req.body.scheduledFor) {
-    const scheduledFor = new Date(req.body.scheduledFor);
-    if (isNaN(scheduledFor.getTime())) {
+  if (scheduledFor) {
+    const scheduledForDate = new Date(scheduledFor);
+    if (isNaN(scheduledForDate.getTime())) {
       return res.status(400).json({
         message: "Invalid scheduled date format!"
       });
@@ -236,9 +244,9 @@ validateRequest.validateNotificationFromTemplate = (req, res, next) => {
   }
 
   // Validate expiration date if provided
-  if (req.body.expiresAt) {
-    const expiresAt = new Date(req.body.expiresAt);
-    if (isNaN(expiresAt.getTime())) {
+  if (expiresAt) {
+    const expiresAtDate = new Date(expiresAt);
+    if (isNaN(expiresAtDate.getTime())) {
       return res.status(400).json({
         message: "Invalid expiration date format!"
       });
@@ -250,6 +258,7 @@ validateRequest.validateNotificationFromTemplate = (req, res, next) => {
 
 // Validate notification update
 validateRequest.validateNotificationUpdate = (req, res, next) => {
+  const { priority, channel, scheduledFor, expiresAt } = req.body;
   // At least one field should be provided
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({
@@ -258,9 +267,9 @@ validateRequest.validateNotificationUpdate = (req, res, next) => {
   }
 
   // Validate priority if provided
-  if (req.body.priority) {
+  if (priority) {
     const validPriorities = ['low', 'normal', 'high', 'urgent'];
-    if (!validPriorities.includes(req.body.priority)) {
+    if (!validPriorities.includes(priority)) {
       return res.status(400).json({
         message: "Priority must be one of: low, normal, high, urgent"
       });
@@ -268,9 +277,9 @@ validateRequest.validateNotificationUpdate = (req, res, next) => {
   }
 
   // Validate channel if provided
-  if (req.body.channel) {
+  if (channel) {
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    if (!validChannels.includes(req.body.channel)) {
+    if (!validChannels.includes(channel)) {
       return res.status(400).json({
         message: "Channel must be one of: in-app, email, sms, push"
       });
@@ -288,9 +297,9 @@ validateRequest.validateNotificationUpdate = (req, res, next) => {
   }
 
   // Validate scheduled date if provided
-  if (req.body.scheduledFor) {
-    const scheduledFor = new Date(req.body.scheduledFor);
-    if (isNaN(scheduledFor.getTime())) {
+  if (scheduledFor) {
+    const scheduledForDate = new Date(scheduledFor);
+    if (isNaN(scheduledForDate.getTime())) {
       return res.status(400).json({
         message: "Invalid scheduled date format!"
       });
@@ -298,9 +307,9 @@ validateRequest.validateNotificationUpdate = (req, res, next) => {
   }
 
   // Validate expiration date if provided
-  if (req.body.expiresAt) {
-    const expiresAt = new Date(req.body.expiresAt);
-    if (isNaN(expiresAt.getTime())) {
+  if (expiresAt) {
+    const expiresAtDate = new Date(expiresAt);
+    if (isNaN(expiresAtDate.getTime())) {
       return res.status(400).json({
         message: "Invalid expiration date format!"
       });
@@ -345,9 +354,9 @@ validateRequest.validateNotificationTemplateCreation = (req, res, next) => {
   }
 
   // Validate default priority if provided
-  if (req.body.defaultPriority) {
+  if (defaultPriority) {
     const validPriorities = ['low', 'normal', 'high', 'urgent'];
-    if (!validPriorities.includes(req.body.defaultPriority)) {
+    if (!validPriorities.includes(defaultPriority)) {
       return res.status(400).json({
         message: "Default priority must be one of: low, normal, high, urgent"
       });
@@ -355,9 +364,9 @@ validateRequest.validateNotificationTemplateCreation = (req, res, next) => {
   }
 
   // Validate default channel if provided
-  if (req.body.defaultChannel) {
+  if (defaultChannel) {
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    if (!validChannels.includes(req.body.defaultChannel)) {
+    if (!validChannels.includes(defaultChannel)) {
       return res.status(400).json({
         message: "Default channel must be one of: in-app, email, sms, push"
       });
@@ -369,6 +378,7 @@ validateRequest.validateNotificationTemplateCreation = (req, res, next) => {
 
 // Validate notification template update
 validateRequest.validateNotificationTemplateUpdate = (req, res, next) => {
+  const { variables, channels, defaultPriority, defaultChannel } = req.body;
   // At least one field should be provided
   if (Object.keys(req.body).length === 0) {
     return res.status(400).json({
@@ -377,22 +387,22 @@ validateRequest.validateNotificationTemplateUpdate = (req, res, next) => {
   }
 
   // Validate variables if provided
-  if (req.body.variables && !Array.isArray(req.body.variables)) {
+  if (variables && !Array.isArray(variables)) {
     return res.status(400).json({
       message: "Variables must be an array!"
     });
   }
 
   // Validate channels if provided
-  if (req.body.channels) {
-    if (!Array.isArray(req.body.channels)) {
+  if (channels) {
+    if (!Array.isArray(channels)) {
       return res.status(400).json({
         message: "Channels must be an array!"
       });
     }
 
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    for (const channel of req.body.channels) {
+    for (const channel of channels) {
       if (!validChannels.includes(channel)) {
         return res.status(400).json({
           message: "Channels must be one or more of: in-app, email, sms, push"
@@ -402,9 +412,9 @@ validateRequest.validateNotificationTemplateUpdate = (req, res, next) => {
   }
 
   // Validate default priority if provided
-  if (req.body.defaultPriority) {
+  if (defaultPriority) {
     const validPriorities = ['low', 'normal', 'high', 'urgent'];
-    if (!validPriorities.includes(req.body.defaultPriority)) {
+    if (!validPriorities.includes(defaultPriority)) {
       return res.status(400).json({
         message: "Default priority must be one of: low, normal, high, urgent"
       });
@@ -412,9 +422,9 @@ validateRequest.validateNotificationTemplateUpdate = (req, res, next) => {
   }
 
   // Validate default channel if provided
-  if (req.body.defaultChannel) {
+  if (defaultChannel) {
     const validChannels = ['in-app', 'email', 'sms', 'push'];
-    if (!validChannels.includes(req.body.defaultChannel)) {
+    if (!validChannels.includes(defaultChannel)) {
       return res.status(400).json({
         message: "Default channel must be one of: in-app, email, sms, push"
       });
@@ -426,14 +436,15 @@ validateRequest.validateNotificationTemplateUpdate = (req, res, next) => {
 
 // Validate bulk template update
 validateRequest.validateBulkTemplateUpdate = (req, res, next) => {
+  const { ids, action } = req.body;
   // Required fields
-  if (!req.body.ids || !Array.isArray(req.body.ids) || req.body.ids.length === 0) {
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({
       message: "Template IDs array is required!"
     });
   }
 
-  if (!req.body.action) {
+  if (!action) {
     return res.status(400).json({
       message: "Action is required!"
     });
@@ -441,7 +452,7 @@ validateRequest.validateBulkTemplateUpdate = (req, res, next) => {
 
   // Validate action
   const validActions = ['activate', 'deactivate'];
-  if (!validActions.includes(req.body.action)) {
+  if (!validActions.includes(action)) {
     return res.status(400).json({
       message: "Action must be one of: activate, deactivate"
     });

@@ -110,14 +110,16 @@ class UserService {
   /**
    * Delete user
    * @param id User ID
+   * @param force If true, performs a force (hard) deletion. If false or omitted, performs a soft deletion.
    * @returns Promise with success status
    */
-  public async deleteUser(id: number): Promise<boolean> {
+  public async deleteUser(id: number, force?: boolean): Promise<boolean> {
     try {
-      await apiService.delete(`/users/${id}`);
+      const url = force ? `/users/${id}?force=true` : `/users/${id}`;
+      await apiService.delete(url);
       return true;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error 
+      const errorMessage = error instanceof Error  
         ? error.message 
         : `Failed to delete user with ID ${id}`;
       throw new Error(errorMessage);

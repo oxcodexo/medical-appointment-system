@@ -5,6 +5,11 @@ const { authJwt } = require('../middleware');
 const permissionHelpers = require('../utils/permission-helpers');
 const { APPOINTMENT } = require('@medical-appointment-system/shared-types');
 
+
+// Create a new appointment
+// Anyone can create an appointment
+router.post('/', appointmentController.create);
+
 // All routes require authentication
 router.use(authJwt.verifyToken);
 
@@ -12,9 +17,6 @@ router.use(authJwt.verifyToken);
 // Permission-based: Users see their own, doctors see their appointments, admins see all
 router.get('/', permissionHelpers.requirePermission(APPOINTMENT.VIEW_ALL),appointmentController.findAll);
 
-// Create a new appointment
-// Anyone authenticated can create an appointment
-router.post('/', permissionHelpers.requirePermission(APPOINTMENT.CREATE), appointmentController.create);
 
 // Get appointment by id
 // Permission check is handled in the controller

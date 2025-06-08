@@ -34,7 +34,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter
+} from '@/components/ui/alert-dialog';
 import { Users, User as UserIcon, Calendar, MoreHorizontal, PlusCircle, Search } from 'lucide-react';
 import AdminProfile from '@/components/AdminProfile';
 import UserFormDialog from '@/components/UserFormDialog';
@@ -64,6 +71,11 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
+
+  // State for deletion dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -132,29 +144,31 @@ const AdminDashboard = () => {
     setIsUserFormOpen(true);
   };
 
-  const handleDeleteUser = async (userId: number) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action ne peut pas être annulée.')) {
-      try {
-        await userService.deleteUser(userId);
-
-        // Remove user from state
-        setUsers(users.filter(user => user.id !== userId));
-
-        // If the user was a doctor, also remove from doctors list
-        setDoctors(doctors.filter(doctor => doctor.userId !== userId));
-
-        toast({
-          title: "Utilisateur supprimé",
-          description: "L'utilisateur a été supprimé avec succès.",
-        });
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        toast({
-          title: "Erreur de suppression de l'utilisateur",
-          description: "Il y a eu un problème lors de la suppression de l'utilisateur.",
-          variant: "destructive"
-        });
-      }
+  const handleDeleteUser = async (force: boolean) => {
+    if (!userToDelete) return;
+    setIsDeleting(true);
+    try {
+      await userService.deleteUser(userToDelete.id, force);
+      setUsers(users.filter(user => user.id !== userToDelete.id));
+      setDoctors(doctors.filter(doctor => doctor.userId !== userToDelete.id));
+      toast({
+        title: "Utilisateur supprimé",
+        description: force
+          ? "L'utilisateur a été supprimé définitivement."
+          : "L'utilisateur a été désactivé et anonymisé (suppression douce).",
+      });
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
+      // eslint-disable-next-line
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Erreur de suppression de l'utilisateur",
+        description: error?.message || "Il y a eu un problème lors de la suppression de l'utilisateur.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -432,7 +446,10 @@ const AdminDashboard = () => {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-red-600"
-                                    onClick={() => handleDeleteUser(user.id)}
+                                    onClick={() => {
+                                      setUserToDelete(user);
+                                      setIsDeleteDialogOpen(true);
+                                    }}
                                   >
                                     Supprimer
                                   </DropdownMenuItem>
@@ -557,9 +574,50 @@ const AdminDashboard = () => {
           onStatusUpdate={handleAppointmentUpdate}
         />
       )}
-    </div>
-  );
-};
+      {/* Delete User Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer l'utilisateur</AlertDialogTitle>
+            <AlertDialogDescription>
+              {userToDelete ? (
+                <>
+                  Voulez-vous effectuer une suppression douce (désactiver et anonymiser l'utilisateur) ou une suppression définitive ?<br />
+                  <span className="font-medium">Nom :</span> {userToDelete.name}<br />
+                  <span className="font-medium">Email :</span> {userToDelete.email}
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }}
+              disabled={isDeleting}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleDeleteUser(false)}
+              disabled={isDeleting}
+            >
+              Suppression douce
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleDeleteUser(true)}
+              disabled={isDeleting}
+            >
+              Suppression définitive
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>);
+}
 
 export default AdminDashboard;
-

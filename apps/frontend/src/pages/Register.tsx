@@ -15,10 +15,10 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Les mots de passe ne correspondent pas",
@@ -27,12 +27,12 @@ const Register = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
-      const success = await register(email, name, password);
-      
+      const success = await register(name, email, password);
+
       if (success) {
         toast({
           title: "Inscription reussie!",
@@ -46,18 +46,27 @@ const Register = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
+      // eslint-disable-next-line
+    } catch (error: any) {
       console.error('Registration error:', error);
+      let description = "Une erreur est survenue lors de l'inscription. Veuillez essayer à nouveau.";
+      if (error?.message) {
+        description = error.message;
+      }
+      if (error?.errors && Array.isArray(error.errors)) {
+        // eslint-disable-next-line
+        description = error.errors.map((err: any) => err.message).join(', ');
+      }
       toast({
-        title: "Inscription echouée",
-        description: "Une erreur est survenue lors de l'inscription. Veuillez essayer à nouveau.",
+        title: "Inscription échouée",
+        description,
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 flex flex-col justify-center">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -71,7 +80,7 @@ const Register = () => {
           </Link>
         </p>
       </div>
-      
+
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -91,7 +100,7 @@ const Register = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -108,7 +117,7 @@ const Register = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Mot de passe
@@ -125,7 +134,7 @@ const Register = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirmation du mot de passe
@@ -142,7 +151,7 @@ const Register = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <Button
                 type="submit"

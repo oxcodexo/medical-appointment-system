@@ -8,93 +8,218 @@ const UserPermission = db.userPermission;
 const Notification = db.notification;
 const NotificationTemplate = db.notificationTemplate;
 const { Op } = require('sequelize');
+const { ROLE_PERMISSION_MAP } = require('@medical-appointment-system/shared-types');
 
 // Register a new user
 exports.register = async (req, res) => {
+
+  const { name, email, password, role, phone, address } = req.body;
   try {
     // Check if email already exists
-    const existingUser = await User.findOne({ where: { email: req.body.email } });
-    if (existingUser) {
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) 
       return res.status(400).json({ message: 'Email is already in use!' });
-    }
 
     // Validate password strength
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
-    if (!passwordRegex.test(req.body.password)) {
+    if (!passwordRegex.test(password)) 
       return res.status(400).json({ 
         message: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.'
       });
-    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
 
     // Create new user
     const user = await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 10),
-      role: req.body.role || 'patient',
-      phone: req.body.phone,
-      address: req.body.address,
-      isActive: true,
-      isEmailVerified: false,
-      verificationToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-      verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      phone,
+      address,
+      status: 'active',
+      emailVerified: true,
     });
 
-    // Generate token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    // Assign permissions based on role 
+    if (role && Object.keys(ROLE_PERMISSION_MAP).includes(role)) {
+      let permissionsToAssign = ROLE_PERMISSION_MAP[role];
+      if (role === 'admin') {
+        // Assign all permissions to admin
+        const allPermissions = await Permission.findAll();
+        permissionsToAssign = allPermissions.map(p => p.name);
+      }
+      // Map permission names to IDs
+      const permissionRecords = await Permission.findAll({ where: { name: permissionsToAssign } });
+      const userPermissions = permissionRecords.map(p => ({
+        userId: user.id,
+        permissionId: p.id,
+        isGranted: true
+      }));
+
+      if (userPermissions.length > 0) 
+        await UserPermission.bulkCreate(userPermissions);
+    }
+
+    // Get user permissions
+    const userPermissions = await getUserPermissions(user.id, user.role);
+
+    // Generate token with role and permissions info
+    const token = jwt.sign({ 
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      permissions: userPermissions // Include permissions in the token
+    }, process.env.JWT_SECRET, {
       expiresIn: 86400 // 24 hours
     });
 
-    // Send welcome notification
-    try {
-      // Find welcome template
-      const welcomeTemplate = await NotificationTemplate.findOne({
-        where: { name: 'welcome_user', isActive: true }
-      });
+    // Format user data for response
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      emailVerified: user.emailVerified,
+      status: user.status,
+      lastLogin: user.lastLogin,
+      userProfile: user.userProfile ? {
+        id: user.userProfile.id,
+        phoneNumber: user.userProfile.phoneNumber,
+        address: user.userProfile.address,
+        dateOfBirth: user.userProfile.dateOfBirth,
+        gender: user.userProfile.gender
+      } : null
+    };
 
-      if (welcomeTemplate) {
-        // Create notification from template
-        let content = welcomeTemplate.content;
-        let title = welcomeTemplate.subject;
-        
-        // Replace variables
-        content = content.replace(/{{name}}/g, user.name);
-        title = title.replace(/{{name}}/g, user.name);
-        
-        await Notification.create({
-          userId: user.id,
-          type: 'welcome',
-          title: title,
-          content: content,
-          isRead: false,
-          priority: 'normal',
-          channel: 'in-app',
-          deliveryStatus: 'delivered',
-          templateId: welcomeTemplate.id
-        });
+    // If user is a doctor, include doctor information
+    if (user.role === 'doctor' && user.doctorId) {
+      const doctor = await db.doctor.findByPk(user.doctorId, {
+        include: [{ model: db.specialty, as: 'specialty' }]
+      });
+      
+      if (doctor) {
+        userData.doctor = {
+          id: doctor.id,
+          specialty: doctor.specialty ? doctor.specialty.name : null,
+          specialtyId: doctor.specialtyId,
+          bio: doctor.bio,
+          experience: doctor.experience,
+          yearsOfExperience: doctor.yearsOfExperience,
+          rating: doctor.rating,
+          reviewCount: doctor.reviewCount,
+          acceptingNewPatients: doctor.acceptingNewPatients
+        };
       }
-    } catch (notifError) {
-      console.error('Error creating welcome notification:', notifError);
-      // Don't fail registration if notification fails
     }
 
     res.status(201).json({
       message: 'User registered successfully!',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified
-      },
+      user: userData,
+      permissions: userPermissions,
       token: token
     });
+
   } catch (err) {
+    // Sequelize validation error
+    if (err.name === 'SequelizeValidationError' && Array.isArray(err.errors)) {
+      return res.status(400).json({
+        message: 'Validation error',
+        errors: err.errors.map(e => ({
+          message: e.message,
+          field: e.path,
+        })),
+      });
+    }
+    // Default error handler
     res.status(500).json({
       message: err.message || 'Some error occurred while registering the user.'
     });
   }
 };
+// // Register a new user
+// exports.register = async (req, res) => {
+
+//   const { name, email, password, role, phone, address } = req.body;
+//   try {
+//     // Check if email already exists
+//     const existingUser = await User.findOne({ where: { email } });
+//     if (existingUser) 
+//       return res.status(400).json({ message: 'Email is already in use!' });
+
+//     // Validate password strength
+//     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,}$/;
+//     if (!passwordRegex.test(password)) 
+//       return res.status(400).json({ 
+//         message: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.'
+//       });
+
+//     const hashedPassword = bcrypt.hashSync(password, 10);
+
+//     // Create new user
+//     const user = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       role,
+//       phone,
+//       address,
+//       status: 'active',
+//       emailVerified: true,
+//     });
+
+//     // Assign permissions based on role 
+//     if (role && Object.keys(ROLE_PERMISSION_MAP).includes(role)) {
+//       let permissionsToAssign = ROLE_PERMISSION_MAP[role];
+//       if (role === 'admin') {
+//         // Assign all permissions to admin
+//         const allPermissions = await Permission.findAll();
+//         permissionsToAssign = allPermissions.map(p => p.name);
+//       }
+//       // Map permission names to IDs
+//       const permissionRecords = await Permission.findAll({ where: { name: permissionsToAssign } });
+//       const userPermissions = permissionRecords.map(p => ({
+//         userId: user.id,
+//         permissionId: p.id,
+//         isGranted: true
+//       }));
+
+//       if (userPermissions.length > 0) 
+//         await UserPermission.bulkCreate(userPermissions);
+//     }
+
+//     // Generate token
+//     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+//       expiresIn: 86400 // 24 hours
+//     });
+
+//     res.status(201).json({
+//       message: 'User registered successfully!',
+//       user: {
+//         id: user.id,
+//         name,
+//         email,
+//         role
+//       },
+//       token
+//     });
+//   } catch (err) {
+//     // Sequelize validation error
+//     if (err.name === 'SequelizeValidationError' && Array.isArray(err.errors)) {
+//       return res.status(400).json({
+//         message: 'Validation error',
+//         errors: err.errors.map(e => ({
+//           message: e.message,
+//           field: e.path,
+//         })),
+//       });
+//     }
+//     // Default error handler
+//     res.status(500).json({
+//       message: err.message || 'Some error occurred while registering the user.'
+//     });
+//   }
+// };
 
 // Verify email
 exports.verifyEmail = async (req, res) => {
@@ -455,7 +580,7 @@ exports.login = async (req, res) => {
 
     // Get user permissions
     const userPermissions = await getUserPermissions(user.id, user.role);
-    
+
     // Generate token with role and permissions info
     const token = jwt.sign({ 
       id: user.id,

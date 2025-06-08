@@ -3,6 +3,9 @@
 // Export permission constants
 export * from './constants/permissions';
 
+// Export role-permission-map constants
+export * from './constants/role-permission-map';
+
 // Export appointment types
 export * from './types/appointment';
 

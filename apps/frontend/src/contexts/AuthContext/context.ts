@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { User, UserProfile } from '@/lib/types';
-import { Permission, PermissionSet } from '@/services/auth.service';
+import { PermissionSet } from '@/services/auth.service';
 
 export interface AuthContextType {
   user: User | null;

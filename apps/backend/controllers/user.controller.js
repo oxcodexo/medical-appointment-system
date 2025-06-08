@@ -1,3 +1,4 @@
+const { ROLE_PERMISSION_MAP } = require('@medical-appointment-system/shared-types');
 const db = require('../models');
 const User = db.user;
 const UserProfile = db.userProfile;
@@ -12,40 +13,33 @@ const bcrypt = require('bcryptjs');
 
 // Create a new user
 exports.create = async (req, res) => {
+  const { name, email, password, role, phone, address, dateOfBirth, gender } = req.body;
   try {
-    // Validate request
-    if (!req.body.name || !req.body.email || !req.body.password || !req.body.role) {
-      return res.status(400).json({
-        message: "Name, email, password, and role are required fields!"
-      });
-    }
 
     // Check if user with email already exists
     const existingUser = await User.findOne({
-      where: { email: req.body.email }
+      where: { email }
     });
 
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({
         message: "Email is already in use!"
       });
-    }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user object
     const user = {
-      name: req.body.name,
-      email: req.body.email,
+      name,
+      email,
       password: hashedPassword,
-      role: req.body.role,
-      isActive: req.body.isActive !== undefined ? req.body.isActive : true,
-      isEmailVerified: req.body.isEmailVerified || false,
-      phone: req.body.phone || null,
-      address: req.body.address || null,
-      doctorId: req.body.doctorId || null,
+      role,
+      status: true,
+      emailVerified: true,
+      phone,
+      address,
       createdBy: req.userId
     };
 
@@ -54,42 +48,62 @@ exports.create = async (req, res) => {
     
     // Create default profile
     if (data) {
-      await UserProfile.create({
-        userId: data.id,
-        phoneNumber: req.body.phone || null,
-        address: req.body.address || null,
-        dateOfBirth: req.body.dateOfBirth || null,
-        gender: req.body.gender || null
-      });
-
-      // Add default permissions based on role
-      if (data.role === 'patient') {
-        // Get patient permissions
-        const patientPermissions = await Permission.findAll({
-          where: {
-            name: {
-              [Op.like]: '%:view_own%'
-            }
-          }
-        });
-
-        // Assign permissions to user
-        for (const permission of patientPermissions) {
-          await UserPermission.create({
-            userId: data.id,
-            permissionId: permission.id,
-            isActive: true,
-            createdBy: req.userId
-          });
-        }
+    // Assign permissions based on role 
+    if (role && Object.keys(ROLE_PERMISSION_MAP).includes(role)) {
+      let permissionsToAssign = ROLE_PERMISSION_MAP[role];
+      if (role === 'admin') {
+        // Assign all permissions to admin
+        const allPermissions = await Permission.findAll();
+        permissionsToAssign = allPermissions.map(p => p.name);
       }
+      // Map permission names to IDs
+      const permissionRecords = await Permission.findAll({ where: { name: permissionsToAssign } });
+      const userPermissions = permissionRecords.map(p => ({
+        userId: data.id,
+        permissionId: p.id,
+        isGranted: true
+      }));
+
+      if (userPermissions.length > 0) 
+        await UserPermission.bulkCreate(userPermissions);
+    }
+
+     // await UserProfile.create({
+      //   userId: data.id,
+      //   phoneNumber: phone || null,
+      //   address: address || null,
+      //   dateOfBirth: dateOfBirth || null,
+      //   gender: gender || null
+      // });
+
+      // // Add default permissions based on role
+      // if (data.role === 'patient') {
+      //   // Get patient permissions
+      //   const patientPermissions = await Permission.findAll({
+      //     where: {
+      //       name: {
+      //         [Op.like]: '%:view_own%'
+      //       }
+      //     }
+      //   });
+
+      //   // Assign permissions to user
+      //   for (const permission of patientPermissions) {
+      //     await UserPermission.create({
+      //       userId: data.id,
+      //       permissionId: permission.id,
+      //       isActive: true,
+      //       createdBy: req.userId
+      //     });
+      //   }
+      // }
 
       // Send welcome notification
-      await sendUserNotification(data.id, 'welcome', { adminName: req.user?.name || 'Administrator' });
+      // await sendUserNotification(data.id, 'welcome', { adminName: req.user?.name || 'Administrator' });
     }
 
     // Return success response with user data (excluding password)
-    const { password, ...userWithoutPassword } = data.toJSON();
+    const { password:pwd, ...userWithoutPassword } = data.toJSON();
     return res.status(201).json({
       message: "User created successfully!",
       user: userWithoutPassword
@@ -503,21 +517,13 @@ exports.delete = async (req, res) => {
       });
     }
 
-    // Only admins can delete users
-    if (req.userRole !== 'admin' && !req.userPermissions?.some(p => p.name === 'user:delete')) {
-      return res.status(403).json({
-        message: 'You do not have permission to delete users.'
-      });
-    }
-
     // Check if user exists
     const user = await User.findByPk(id);
     
-    if (!user) {
+    if (!user) 
       return res.status(404).json({
         message: `User with id=${id} was not found.`
       });
-    }
 
     // Check if user has related data
     let relatedData = {};

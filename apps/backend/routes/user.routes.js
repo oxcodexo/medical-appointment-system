@@ -7,14 +7,15 @@ const logger = require('../utils/logger');
 const { USER, NOTIFICATION, PERMISSION } = require('@medical-appointment-system/shared-types');
 
 // Apply authentication and permissions middleware to all routes
-// Temporarily commented out for development
-// router.use(authJwt.verifyToken);
+router.use(authJwt.verifyToken);
 
 // Create a new User (admin only)
-router.post("/", [
+router.post("/", 
+[
   permissionHelpers.requirePermission(USER.CREATE),
-  validateRequest.validateUserCreation
-], userController.create);
+  // validateRequest.validateUserCreation
+], 
+userController.create);
 
 // Retrieve all Users (with filtering and pagination)
 // router.get("/", permissionHelpers.requireAnyPermission([USER.VIEW_ALL, USER.VIEW_OWN]), userController.findAll);
