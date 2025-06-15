@@ -13,7 +13,7 @@ const bcrypt = require('bcryptjs');
 
 // Create a new user
 exports.create = async (req, res) => {
-  const { name, email, password, role, phone, address, dateOfBirth, gender } = req.body;
+  const { name, email, password, role, phone, address, dateOfBirth, gender, bio, experience, yearsOfExperience, languages, officeAddress, officeHours, acceptingNewPatients, specialtyId } = req.body;
   try {
 
     // Check if user with email already exists
@@ -100,6 +100,20 @@ exports.create = async (req, res) => {
 
       // Send welcome notification
       // await sendUserNotification(data.id, 'welcome', { adminName: req.user?.name || 'Administrator' });
+    }
+
+    if (role === 'doctor') {
+      await Doctor.create({
+        userId: data.id,
+        specialtyId,
+        bio,
+        experience,
+        yearsOfExperience,
+        languages: Array.isArray(languages) ? languages.join(',') : '',
+        officeAddress,
+        officeHours,
+        acceptingNewPatients
+      });
     }
 
     // Return success response with user data (excluding password)

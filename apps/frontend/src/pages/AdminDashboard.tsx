@@ -1,10 +1,10 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import userService from '@/services/user.service';
 import doctorService from '@/services/doctor.service';
 import appointmentService, { PaginationResponse } from '@/services/appointment.service';
-import { User, Doctor, Appointment } from '@medical-appointment-system/shared-types';
+import specialtyService from '@/services/specialty.service';
+import { User, Doctor, Appointment, Specialty } from '@medical-appointment-system/shared-types';
 import {
   Card,
   CardContent,
@@ -71,6 +71,7 @@ const AdminDashboard = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
 
   // State for deletion dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -87,6 +88,10 @@ const AdminDashboard = () => {
       // Fetch all doctors
       const doctorsData = await doctorService.getAllDoctors();
       setDoctors(doctorsData);
+
+      // Fetch all specialties
+      const specialtiesData = await specialtyService.getAllSpecialties();
+      setSpecialties(specialtiesData);
 
       // Fetch all appointments with pagination
       const { appointments: appointmentsData, pagination } = await appointmentService.getAllAppointments();
@@ -562,6 +567,7 @@ const AdminDashboard = () => {
         onOpenChange={setIsUserFormOpen}
         user={editingUser}
         doctors={doctors}
+        specialties={specialties}
         onUserSaved={handleUserFormSubmit}
       />
 

@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { User, Doctor, UserData, UserRole } from '@medical-appointment-system/shared-types';
+import { User, Doctor, UserData, UserRole, Specialty } from '@medical-appointment-system/shared-types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +19,7 @@ interface UserFormDialogProps {
   onOpenChange: (open: boolean) => void;
   user: User | null;
   doctors: Doctor[];
+  specialties: Specialty[];
   onUserSaved?: (user: Partial<User>) => void;
 }
 
@@ -28,14 +28,32 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
   onOpenChange,
   user,
   doctors,
+  specialties = [],  // Set default value to an empty array
   onUserSaved,
 }) => {
-  const [formData, setFormData] = useState<UserData & { doctorId: string }>({
+  const [formData, setFormData] = useState<UserData & { doctorId: string } & {
+    bio: string;
+    experience: string;
+    yearsOfExperience: number;
+    languages: string;
+    officeAddress: string;
+    officeHours: string;
+    acceptingNewPatients: boolean;
+    specialtyId: string;
+  }>({
     name: '',
     email: '',
     password: '',
     role: UserRole.PATIENT,
     doctorId: '',
+    bio: '',
+    experience: '',
+    yearsOfExperience: 0,
+    languages: '',
+    officeAddress: '',
+    officeHours: '',
+    acceptingNewPatients: true,
+    specialtyId: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -44,11 +62,11 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
 
   useEffect(() => {
     if (user) {
-      // Get doctorId from the user object if it exists
-      // This assumes there might be a relationship between user and doctor
       const userDoctorId = user.role === 'doctor' || user.role === 'responsable'
-        ? user.id.toString() // For doctors, use their own ID
-        : ''; // For other roles, no doctorId by default
+        ? user.id.toString()
+        : '';
+
+      const doctorDetails = doctors.find(doc => doc.userId === user.id);
 
       setFormData({
         name: user.name,
@@ -56,6 +74,14 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         password: '',
         role: user.role,
         doctorId: userDoctorId,
+        bio: doctorDetails?.bio || '',
+        experience: doctorDetails?.experience || '',
+        yearsOfExperience: doctorDetails?.yearsOfExperience || 0,
+        languages: doctorDetails?.languages?.join(', ') || '',
+        officeAddress: doctorDetails?.officeAddress || '',
+        officeHours: doctorDetails?.officeHours || '',
+        acceptingNewPatients: doctorDetails?.acceptingNewPatients || true,
+        specialtyId: doctorDetails?.specialtyId?.toString() || '',
       });
     } else {
       setFormData({
@@ -64,11 +90,19 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
         password: '',
         role: UserRole.PATIENT,
         doctorId: '',
+        bio: '',
+        experience: '',
+        yearsOfExperience: 0,
+        languages: '',
+        officeAddress: '',
+        officeHours: '',
+        acceptingNewPatients: true,
+        specialtyId: '',
       });
     }
-  }, [user]);
+  }, [user, doctors]);
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | boolean | number) => {
     setFormData({ ...formData, [field]: value });
   };
 
@@ -107,12 +141,24 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       if (isNewUser) {
         // Create new user
         const userData = {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          doctorId: null,
-        };
+  name: formData.name,
+  email: formData.email,
+  password: formData.password,
+  role: formData.role,
+  doctorId: null,
+  bio: formData.bio,
+  experience: formData.experience,
+  yearsOfExperience: formData.yearsOfExperience,
+  // Convert languages string to array for backend
+  languages: formData.languages
+    .split(',')
+    .map(l => l.trim())
+    .filter(Boolean),
+  officeAddress: formData.officeAddress,
+  officeHours: formData.officeHours,
+  acceptingNewPatients: formData.acceptingNewPatients,
+  specialtyId: formData.specialtyId,
+};
         if ((formData.role === 'doctor' || formData.role === 'responsable') && formData.doctorId && formData.doctorId !== 'new') {
           userData.doctorId = parseInt(formData.doctorId);
         }
@@ -124,16 +170,36 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       } else if (user) {
         // Update existing user
         const userData: {
-          name?: string;
-          email?: string;
-          password?: string;
-          role?: string;
-          doctorId?: number | null;
-        } = {
-          name: formData.name,
-          email: formData.email,
-          role: formData.role
-        };
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: string;
+  doctorId?: number | null;
+  bio?: string;
+  experience?: string;
+  yearsOfExperience?: number;
+  languages?: string[];
+  officeAddress?: string;
+  officeHours?: string;
+  acceptingNewPatients?: boolean;
+  specialtyId?: string;
+} = {
+  name: formData.name,
+  email: formData.email,
+  role: formData.role,
+  bio: formData.bio,
+  experience: formData.experience,
+  yearsOfExperience: formData.yearsOfExperience,
+  // Convert languages string to array for backend
+  languages: formData.languages
+    .split(',')
+    .map(l => l.trim())
+    .filter(Boolean),
+  officeAddress: formData.officeAddress,
+  officeHours: formData.officeHours,
+  acceptingNewPatients: formData.acceptingNewPatients,
+  specialtyId: formData.specialtyId,
+};
 
         // Only include password if it was provided
         if (formData.password) {
@@ -198,88 +264,242 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
           <DialogTitle>{isNewUser ? "Créer un nouvel utilisateur" : "Modifier l'utilisateur"}</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Nom complet</Label>
-            <Input
-              id="name"
-              placeholder="Entrez le nom complet"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              required
-            />
-          </div>
+        {formData.role === 'doctor' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Nom complet</Label>
+                <Input
+                  id="name"
+                  placeholder="Entrez le nom complet"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  required
+                />
+              </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="email">Adresse email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Entrez l'adresse email"
-              value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              required
-            />
-          </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Adresse email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Entrez l'adresse email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  required
+                />
+              </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="password">
-              {isNewUser ? "Mot de passe" : "Nouveau mot de passe (laissez vide pour garder inchangé)"}
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder={isNewUser ? "Entrez le mot de passe" : "Entrez un nouveau mot de passe (facultatif)"}
-              value={formData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              required={isNewUser}
-            />
-          </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">
+                  {isNewUser ? "Mot de passe" : "Nouveau mot de passe (laissez vide pour garder inchangé)"}
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder={isNewUser ? "Entrez le mot de passe" : "Entrez un nouveau mot de passe (facultatif)"}
+                  value={formData.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  required={isNewUser}
+                />
+              </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="role">Rôle de l'utilisateur</Label>
-            <Select
-              value={formData.role}
-              onValueChange={(value) => handleChange('role', value)}
-            >
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Sélectionner un rôle" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="patient">Patient</SelectItem>
-                <SelectItem value="doctor">Médecin</SelectItem>
-                <SelectItem value="responsable">Responsable</SelectItem>
-                <SelectItem value="admin">Administrateur</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <div className="grid gap-2">
+                <Label htmlFor="role">Rôle de l'utilisateur</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value) => handleChange('role', value)}
+                >
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Sélectionner un rôle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="patient">Patient</SelectItem>
+                    <SelectItem value="doctor">Médecin</SelectItem>
+                    <SelectItem value="responsable">Responsable</SelectItem>
+                    <SelectItem value="admin">Administrateur</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {(formData.role === 'doctor' || formData.role === 'responsable') && (
+              {(formData.role === 'doctor' || formData.role === 'responsable') && (
+                <div className="grid gap-2">
+                  <Label htmlFor="doctorId">
+                    {formData.role === 'doctor' ? "Associer au profil du médecin" : "Assigner au médecin à gérer"}
+                  </Label>
+                  <Select
+                    value={formData.doctorId}
+                    onValueChange={(value) => handleChange('doctorId', value)}
+                  >
+                    <SelectTrigger id="doctorId">
+                      <SelectValue placeholder="Sélectionner un médecin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {formData.role === 'doctor' ? (
+                        <SelectItem value="new">Créer un nouveau profil de médecin</SelectItem>
+                      ) : null}
+                      {doctors.map((doctor) => (
+                        <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                          {doctor.user?.name || 'Unknown'} - {doctor.specialty?.name || 'No specialty'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="bio">Biographie</Label>
+                <Input
+                  id="bio"
+                  placeholder="Entrez la biographie"
+                  value={formData.bio}
+                  onChange={(e) => handleChange('bio', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="experience">Expérience</Label>
+                <Input
+                  id="experience"
+                  placeholder="Entrez l'expérience"
+                  value={formData.experience}
+                  onChange={(e) => handleChange('experience', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="yearsOfExperience">Années d'expérience</Label>
+                <Input
+                  id="yearsOfExperience"
+                  type="number"
+                  placeholder="Entrez les années d'expérience"
+                  value={formData.yearsOfExperience}
+                  onChange={(e) => handleChange('yearsOfExperience', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="languages">Langues</Label>
+                <Input
+                  id="languages"
+                  placeholder="Entrez les langues parlées"
+                  value={formData.languages}
+                  onChange={(e) => handleChange('languages', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="officeAddress">Adresse du bureau</Label>
+                <Input
+                  id="officeAddress"
+                  placeholder="Entrez l'adresse du bureau"
+                  value={formData.officeAddress}
+                  onChange={(e) => handleChange('officeAddress', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="officeHours">Heures de bureau</Label>
+                <Input
+                  id="officeHours"
+                  placeholder="Entrez les heures de bureau"
+                  value={formData.officeHours}
+                  onChange={(e) => handleChange('officeHours', e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="acceptingNewPatients">Accepte de nouveaux patients</Label>
+                <Select
+                  value={formData.acceptingNewPatients ? 'yes' : 'no'}
+                  onValueChange={(value) => handleChange('acceptingNewPatients', value === 'yes')}
+                >
+                  <SelectTrigger id="acceptingNewPatients">
+                    <SelectValue placeholder="Sélectionner une option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="yes">Oui</SelectItem>
+                    <SelectItem value="no">Non</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.role === 'doctor' && (
+                <div className="grid gap-2">
+                  <Label htmlFor="specialtyId">Spécialité</Label>
+                  <Select
+                    value={formData.specialtyId}
+                    onValueChange={(value) => handleChange('specialtyId', value)}
+                  >
+                    <SelectTrigger id="specialtyId">
+                      <SelectValue placeholder="Sélectionner une spécialité" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialties.map((specialty) => (
+                        <SelectItem key={specialty.id} value={specialty.id.toString()}>
+                          {specialty.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="doctorId">
-                {formData.role === 'doctor' ? "Associer au profil du médecin" : "Assigner au médecin à gérer"}
+              <Label htmlFor="name">Nom complet</Label>
+              <Input
+                id="name"
+                placeholder="Entrez le nom complet"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="email">Adresse email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Entrez l'adresse email"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password">
+                {isNewUser ? "Mot de passe" : "Nouveau mot de passe (laissez vide pour garder inchangé)"}
               </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder={isNewUser ? "Entrez le mot de passe" : "Entrez un nouveau mot de passe (facultatif)"}
+                value={formData.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                required={isNewUser}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="role">Rôle de l'utilisateur</Label>
               <Select
-                value={formData.doctorId}
-                onValueChange={(value) => handleChange('doctorId', value)}
+                value={formData.role}
+                onValueChange={(value) => handleChange('role', value)}
               >
-                <SelectTrigger id="doctorId">
-                  <SelectValue placeholder="Sélectionner un médecin" />
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Sélectionner un rôle" />
                 </SelectTrigger>
                 <SelectContent>
-                  {formData.role === 'doctor' ? (
-                    <SelectItem value="new">Créer un nouveau profil de médecin</SelectItem>
-                  ) : null}
-                  {doctors.map((doctor) => (
-                    <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                      {doctor.user?.name || 'Unknown'} - {doctor.specialty?.name || 'No specialty'}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="patient">Patient</SelectItem>
+                  <SelectItem value="doctor">Médecin</SelectItem>
+                  <SelectItem value="responsable">Responsable</SelectItem>
+                  <SelectItem value="admin">Administrateur</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

@@ -71,8 +71,15 @@ module.exports = (sequelize, Sequelize) => {
         const value = this.getDataValue('languages');
         return value ? value.split(',') : [];
       },
+      // Accept both arrays and strings for robustness
       set(val) {
-        this.setDataValue('languages', val.join(','));
+        if (Array.isArray(val)) {
+          this.setDataValue('languages', val.join(','));
+        } else if (typeof val === 'string') {
+          this.setDataValue('languages', val);
+        } else {
+          this.setDataValue('languages', '');
+        }
       }
     },
     userId: {
