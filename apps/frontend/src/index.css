@@ -319,7 +319,7 @@
     margin-top: 4px;
   }
 
-  .doctor-available {
+  /* .doctor-available {
     background-color: #e8f5e9;
     color: #2e7d32;
     border: 1px solid #c8e6c9;
@@ -329,6 +329,21 @@
     background-color: #ffebee;
     color: #c62828;
     border: 1px solid #ffcdd2;
+  } */
+
+  .doctor-available {
+    background-color: #d1fae5; /* light green */
+    color: #065f46;
+  }
+  
+  .doctor-unavailable {
+    background-color: #fee2e2; /* light red */
+    color: #991b1b;
+  }
+  
+  .doctor-unknown {
+    background-color: #fef3c7; /* light yellow */
+    color: #92400e;
   }
 
   /* Typing indicator animation */
