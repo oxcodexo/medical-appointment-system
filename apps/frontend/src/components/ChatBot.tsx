@@ -522,9 +522,15 @@ const ChatBot = () => {
                                   <div key={lineIdx} className="doctor-card">
                                     <div className="doctor-name">{name}</div>
                                     <div className="doctor-specialty">{specialty}</div>
-                                    <div className={`doctor-availability ${status.toLowerCase().includes("disponible aujourd'hui")
+                                    {/* <div className={`doctor-availability ${status.toLowerCase().includes("disponible aujourd'hui")
                                       ? "doctor-available"
                                       : "doctor-unavailable"
+                                      }`}> */}
+                                      <div className={`doctor-availability ${status.toLowerCase().includes("non disponible")
+                                        ? "doctor-unavailable"
+                                        : status.toLowerCase().includes("disponible aujourd'hui")
+                                        ? "doctor-available"
+                                        : "doctor-unknown"
                                       }`}>
                                       {status}
                                     </div>
@@ -556,10 +562,17 @@ const ChatBot = () => {
                         return (
                           <button
                             key={qIdx}
+                            // onClick={() => {
+                            //   setInputMessage(question);
+                            //   handleSendMessage();
+                            // }}
                             onClick={() => {
                               setInputMessage(question);
-                              handleSendMessage();
+                              setTimeout(() => {
+                                handleSendMessage();
+                              }, 100); // Let state update before triggering
                             }}
+                            
                             className="chatbot-suggestion-button"
                           >
                             {question}
