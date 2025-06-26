@@ -38,6 +38,17 @@ const days = [
   'sunday'
 ] as const;
 
+// Mapping from English to French day names
+const dayNameMap: Record<typeof days[number], string> = {
+  monday: 'Lundi',
+  tuesday: 'Mardi',
+  wednesday: 'Mercredi',
+  thursday: 'Jeudi',
+  friday: 'Vendredi',
+  saturday: 'Samedi',
+  sunday: 'Dimanche',
+};
+
 const timeOptions = [
   '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
   '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
@@ -102,7 +113,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
 
       toast({
         title: "Horaires mis à jour",
-        description: `Vos horaires pour ${selectedDay} ont été mis à jour.`
+        description: `Vos horaires pour ${dayNameMap[selectedDay]} ont été mis à jour.`
       });
     } catch (error) {
       console.error('Error updating availability:', error);
@@ -167,7 +178,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
 
       toast({
         title: "Horaires supprimés",
-        description: `Vos horaires pour ${dayOfWeek} ont été supprimés.`
+        description: `Vos horaires pour ${dayNameMap[dayOfWeek]} ont été supprimés.`
       });
     } catch (error) {
       console.error('Error removing availability:', error);
@@ -217,9 +228,9 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <Card>
+      <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Horaires hebdomadaires</CardTitle>
             <Button onClick={() => setIsAddingAvailability(true)}>
@@ -238,7 +249,7 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
               return (
                 <div key={day} className="flex items-center justify-between px-4 py-3 border rounded-md">
                   <div className="flex items-center">
-                    <span className="capitalize font-medium w-24">{day}</span>
+                    <span className="capitalize font-medium w-24">{dayNameMap[day]}</span>
                     {dayAvailability ? (
                       <Badge variant="outline" className="ml-2">
                         {dayAvailability.startTime} - {dayAvailability.endTime}
@@ -301,7 +312,6 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
         </CardContent>
       </Card>
 
-      {/* Dialog for adding availability */}
       <Dialog open={isAddingAvailability} onOpenChange={setIsAddingAvailability}>
         <DialogContent>
           <DialogHeader>
@@ -312,18 +322,17 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
               <label className="text-sm font-medium">Jour de la semaine</label>
               <Select value={selectedDay} onValueChange={(value: typeof days[number]) => setSelectedDay(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a day" />
+                  <SelectValue placeholder="Sélectionnez un jour" />
                 </SelectTrigger>
                 <SelectContent>
                   {days.map((day) => (
                     <SelectItem key={day} value={day} className="capitalize">
-                      {day}
+                      {dayNameMap[day]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Heure de début</label>
@@ -346,7 +355,6 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Heure de fin</label>
                 <Select
@@ -369,7 +377,6 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 </Select>
               </div>
             </div>
-
             {!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime) && (
               <p className="text-sm text-red-500">Heure de fin doit être après l'heure de début</p>
             )}
@@ -380,7 +387,12 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
             </Button>
             <Button
               onClick={saveAvailability}
-              disabled={!isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime)}
+              disabled={
+                !selectedDay ||
+                !selectedTimeSlot.startTime ||
+                !selectedTimeSlot.endTime ||
+                !isTimeValid(selectedTimeSlot.startTime, selectedTimeSlot.endTime)
+              }
             >
               Enregistrer
             </Button>
@@ -388,7 +400,6 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog for adding absence */}
       <Dialog open={isAddingAbsence} onOpenChange={setIsAddingAbsence}>
         <DialogContent>
           <DialogHeader>
@@ -427,7 +438,6 @@ const DoctorSchedule: React.FC<DoctorScheduleProps> = ({ doctor }) => {
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium">Raison</label>
               <Textarea

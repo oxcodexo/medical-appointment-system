@@ -112,6 +112,20 @@ const DoctorDashboard = () => {
   };
 
   // Generate week view (current week starts)
+  // Mapping for English short day names to French
+  const frenchDayName = (engShortDay: string) => {
+    const map: { [key: string]: string } = {
+      Mon: 'Lun',
+      Tue: 'Mar',
+      Wed: 'Mer',
+      Thu: 'Jeu',
+      Fri: 'Ven',
+      Sat: 'Sam',
+      Sun: 'Dim',
+    };
+    return map[engShortDay] || engShortDay;
+  };
+
   const renderWeekView = () => {
     const startDate = startOfWeek(selectedDate || new Date(), { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 7 }).map((_, index) => addDays(startDate, index));
@@ -126,7 +140,8 @@ const DoctorDashboard = () => {
             <div key={day.toString()} className="flex flex-col gap-2">
               {/* Day headers */}
               <div className="text-center">
-                <div className="font-medium">{format(day, 'EEE')}</div>
+                {/* Display the day in French for UI only */}
+                <div className="font-medium">{frenchDayName(format(day, 'EEE'))}</div>
                 <div className="text-sm text-gray-500">{format(day, 'MMM d')}</div>
               </div>
 

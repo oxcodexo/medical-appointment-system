@@ -295,13 +295,14 @@ const AppointmentDetailsDialog = ({ appointment, open, onOpenChange, onStatusUpd
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-fit h-[90%] overflow-y-auto">
+      <DialogContent className="max-w-fit h-[95%] overflow-y-auto">
+      {/* <DialogContent className="w-full max-w-[1000px] h-[90%] overflow-y-auto"> */}
         <DialogHeader>
           <DialogTitle>Détails du rendez-vous</DialogTitle>
         </DialogHeader>
 
         <div className="flex w-full gap-8">
-          <div className="space-y-6">
+          <div className="w-[600px] space-y-6">
             {/* Appointment Info */}
             <div className="space-y-4 border-2 p-2 rounded">
               <div className="flex items-center justify-between">

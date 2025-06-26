@@ -522,9 +522,11 @@ const ChatBot = () => {
                                   <div key={lineIdx} className="doctor-card">
                                     <div className="doctor-name">{name}</div>
                                     <div className="doctor-specialty">{specialty}</div>
-                                    <div className={`doctor-availability ${status.toLowerCase().includes("disponible aujourd'hui")
+                                    <div className={`doctor-availability ${status.toLowerCase().includes("non disponible")
+                                      ? "doctor-unavailable"
+                                      : status.toLowerCase().includes("disponible aujourd'hui")
                                       ? "doctor-available"
-                                      : "doctor-unavailable"
+                                      : "doctor-unknown"
                                       }`}>
                                       {status}
                                     </div>
