@@ -821,17 +821,6 @@ exports.findManagedByUser = async (req, res) => {
   const managerId = req.params.userId;
 
   try {
-    // Check permissions - users can only see their own managed doctors unless they have permission
-    if (
-      parseInt(managerId) !== req.userId && 
-      req.userRole !== 'admin' && 
-      !req.permissions?.some(p => p.name === 'doctor:view_all')
-    ) {
-      return res.status(403).json({
-        message: 'You do not have permission to view doctors managed by this user.'
-      });
-    }
-
     // Find all doctors managed by this user
     const doctors = await Doctor.findAll({
       include: [
@@ -853,7 +842,10 @@ exports.findManagedByUser = async (req, res) => {
             where: { managerId: managerId }
           }
         }
-      ]
+      ],
+      where: {
+        '$managers.id$': managerId // Ensure only doctors managed by this specific manager are retrieved
+      }
     });
     
     res.status(200).json(doctors);

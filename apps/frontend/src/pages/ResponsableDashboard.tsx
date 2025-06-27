@@ -45,6 +45,7 @@ const ResponsableDashboard = () => {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,6 +53,7 @@ const ResponsableDashboard = () => {
       if (!user || user.role !== 'responsable') return;
       try {
         const managedDoctors = await doctorService.getDoctorsManagedByUser(user.id);
+        console.log("managedDoctors", managedDoctors);
         if (managedDoctors && managedDoctors.length > 0) {
           const managedDoctor = managedDoctors[0];
           setDoctor(managedDoctor);
@@ -155,19 +157,29 @@ const ResponsableDashboard = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   useEffect(() => {
     const _filteredAppointments = appointments
       .filter(appointment => {
         if (statusFilter === 'all') return true;
         return appointment.status === statusFilter;
       })
+      .filter((appointment) =>
+        appointment.patientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        appointment.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        appointment.date.includes(searchQuery) ||
+        appointment.reason.includes(searchQuery)
+      )
       .sort((a, b) => {
         const dateA = new Date(`${a.date}T${a.time}`);
         const dateB = new Date(`${b.date}T${b.time}`);
         return dateA.getTime() - dateB.getTime();
       });
     setFilteredAppointments(_filteredAppointments);
-  }, [appointments, statusFilter]);
+  }, [appointments, statusFilter, searchQuery]);
 
 
   if (!user || user.role !== 'responsable') {
@@ -280,6 +292,13 @@ const ResponsableDashboard = () => {
             </div>
             <CardDescription>
               Gestion des rendez-vous pour {doctor?.user?.name}.
+              <input
+                type="text"
+                placeholder="Rechercher des rendez-vous"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="border rounded p-2 w-full mt-4"
+              />
             </CardDescription>
           </CardHeader>
           <CardContent>

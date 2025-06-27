@@ -141,26 +141,6 @@ db.notification.belongsTo(db.notificationTemplate, { foreignKey: 'templateId', a
 
 // Add hooks for data validation and consistency
 
-// Appointment validation hook
-db.appointment.beforeCreate(async (appointment, options) => {
-  // If this is not a guest booking, ensure userId is provided and validate user exists
-  if (!appointment.isGuestBooking) {
-    if (!appointment.userId) {
-      throw new Error('User ID is required for registered patient appointments');
-    }
-    
-    // For registered users, patient details are derived from user profile
-    appointment.patientName = null;
-    appointment.patientEmail = null;
-    appointment.patientPhone = null;
-  } else {
-    // For guest bookings, ensure patient details are provided
-    if (!appointment.patientName || !appointment.patientEmail || !appointment.patientPhone) {
-      throw new Error('Patient details are required for guest bookings');
-    }
-  }
-});
-
 // Doctor validation hook
 db.doctor.beforeCreate(async (doctor, options) => {
   // Ensure the userId exists and is valid

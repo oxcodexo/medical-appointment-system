@@ -3,6 +3,7 @@ const db = require('../models');
 const User = db.user;
 const UserProfile = db.userProfile;
 const Doctor = db.doctor;
+const DoctorManager = db.doctorManager;
 const Appointment = db.appointment;
 const UserPermission = db.userPermission;
 const Permission = db.permission;
@@ -13,7 +14,7 @@ const bcrypt = require('bcryptjs');
 
 // Create a new user
 exports.create = async (req, res) => {
-  const { name, email, password, role, phone, address, dateOfBirth, gender, bio, experience, yearsOfExperience, languages, officeAddress, officeHours, acceptingNewPatients, specialtyId } = req.body;
+  const { name, email, password, role, phone, address, dateOfBirth, doctorId, bio, experience, yearsOfExperience, languages, officeAddress, officeHours, acceptingNewPatients, specialtyId } = req.body;
   try {
 
     // Check if user with email already exists
@@ -113,6 +114,17 @@ exports.create = async (req, res) => {
         officeAddress,
         officeHours,
         acceptingNewPatients
+      });
+    }
+
+
+    if (role === 'responsable') {
+      await DoctorManager.create({
+        doctorId,
+        managerId: data.id,
+        isPrimary: true,
+        canEditSchedule: true,
+        canManageAppointments: true
       });
     }
 

@@ -305,9 +305,10 @@ exports.create = async (req, res) => {
       });
     }
 
+    let user
     // Check if user exists if userId is provided
     if (userId) {
-      const user = await User.findByPk(userId);
+      user = await User.findByPk(userId);
       if (!user) {
         return res.status(404).json({
           message: `User with id=${userId} not found.`
@@ -363,21 +364,27 @@ exports.create = async (req, res) => {
       });
     }
 
-    // Create appointment
-    const appointment = await Appointment.create({
+    const _patientName = user?.name || patientName;
+    const _patientEmail = user?.email || patientEmail;
+    const _patientPhone = user?.phone || patientPhone;
+
+    const appointmentData = {
       doctorId,
       date,
       time,
       reason,
       userId: userId || null,
-      patientName: patientName || null,
-      patientEmail: patientEmail || null,
-      patientPhone: patientPhone || null,
+      patientName: _patientName,
+      patientEmail: _patientEmail,
+      patientPhone: _patientPhone,
       isGuestBooking: !!isGuestBooking,
       status: 'pending',
       notes: notes || null,
       duration: duration || 30
-    });
+    };
+
+    // Create appointment
+    const appointment = await Appointment.create(appointmentData);
 
     // Send notification for new appointment
     await sendAppointmentNotification(

@@ -143,7 +143,7 @@ const PatientDashboard = () => {
                             <div className="flex items-center mt-1 text-sm text-gray-500">
                               <User className="h-4 w-4 mr-1" />
                               <span>
-                                Dr. {appointment.doctorId}
+                                {appointment.doctor?.user?.name}
                               </span>
                             </div>
                           </div>
@@ -192,7 +192,7 @@ const PatientDashboard = () => {
                             <div className="flex items-center mt-1 text-sm text-gray-500">
                               <User className="h-4 w-4 mr-1" />
                               <span>
-                                Dr. {appointment.doctorId}
+                                {appointment.doctor?.user?.name}
                               </span>
                             </div>
                           </div>

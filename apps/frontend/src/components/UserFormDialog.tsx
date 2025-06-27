@@ -141,24 +141,24 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       if (isNewUser) {
         // Create new user
         const userData = {
-  name: formData.name,
-  email: formData.email,
-  password: formData.password,
-  role: formData.role,
-  doctorId: null,
-  bio: formData.bio,
-  experience: formData.experience,
-  yearsOfExperience: formData.yearsOfExperience,
-  // Convert languages string to array for backend
-  languages: formData.languages
-    .split(',')
-    .map(l => l.trim())
-    .filter(Boolean),
-  officeAddress: formData.officeAddress,
-  officeHours: formData.officeHours,
-  acceptingNewPatients: formData.acceptingNewPatients,
-  specialtyId: formData.specialtyId,
-};
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          doctorId: formData.doctorId ? parseInt(formData.doctorId) : null,
+          bio: formData.bio,
+          experience: formData.experience,
+          yearsOfExperience: formData.yearsOfExperience,
+          // Convert languages string to array for backend
+          languages: formData.languages
+            .split(',')
+            .map(l => l.trim())
+            .filter(Boolean),
+          officeAddress: formData.officeAddress,
+          officeHours: formData.officeHours,
+          acceptingNewPatients: formData.acceptingNewPatients,
+          specialtyId: formData.specialtyId,
+        };
         if ((formData.role === 'doctor' || formData.role === 'responsable') && formData.doctorId && formData.doctorId !== 'new') {
           userData.doctorId = parseInt(formData.doctorId);
         }
@@ -170,36 +170,36 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
       } else if (user) {
         // Update existing user
         const userData: {
-  name?: string;
-  email?: string;
-  password?: string;
-  role?: string;
-  doctorId?: number | null;
-  bio?: string;
-  experience?: string;
-  yearsOfExperience?: number;
-  languages?: string[];
-  officeAddress?: string;
-  officeHours?: string;
-  acceptingNewPatients?: boolean;
-  specialtyId?: string;
-} = {
-  name: formData.name,
-  email: formData.email,
-  role: formData.role,
-  bio: formData.bio,
-  experience: formData.experience,
-  yearsOfExperience: formData.yearsOfExperience,
-  // Convert languages string to array for backend
-  languages: formData.languages
-    .split(',')
-    .map(l => l.trim())
-    .filter(Boolean),
-  officeAddress: formData.officeAddress,
-  officeHours: formData.officeHours,
-  acceptingNewPatients: formData.acceptingNewPatients,
-  specialtyId: formData.specialtyId,
-};
+          name?: string;
+          email?: string;
+          password?: string;
+          role?: string;
+          doctorId?: number | null;
+          bio?: string;
+          experience?: string;
+          yearsOfExperience?: number;
+          languages?: string[];
+          officeAddress?: string;
+          officeHours?: string;
+          acceptingNewPatients?: boolean;
+          specialtyId?: string;
+        } = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          bio: formData.bio,
+          experience: formData.experience,
+          yearsOfExperience: formData.yearsOfExperience,
+          // Convert languages string to array for backend
+          languages: formData.languages
+            .split(',')
+            .map(l => l.trim())
+            .filter(Boolean),
+          officeAddress: formData.officeAddress,
+          officeHours: formData.officeHours,
+          acceptingNewPatients: formData.acceptingNewPatients,
+          specialtyId: formData.specialtyId,
+        };
 
         // Only include password if it was provided
         if (formData.password) {
@@ -321,32 +321,6 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
                   </SelectContent>
                 </Select>
               </div>
-
-              {(formData.role === 'doctor' || formData.role === 'responsable') && (
-                <div className="grid gap-2">
-                  <Label htmlFor="doctorId">
-                    {formData.role === 'doctor' ? "Associer au profil du médecin" : "Assigner au médecin à gérer"}
-                  </Label>
-                  <Select
-                    value={formData.doctorId}
-                    onValueChange={(value) => handleChange('doctorId', value)}
-                  >
-                    <SelectTrigger id="doctorId">
-                      <SelectValue placeholder="Sélectionner un médecin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {formData.role === 'doctor' ? (
-                        <SelectItem value="new">Créer un nouveau profil de médecin</SelectItem>
-                      ) : null}
-                      {doctors.map((doctor) => (
-                        <SelectItem key={doctor.id} value={doctor.id.toString()}>
-                          {doctor.user?.name || 'Unknown'} - {doctor.specialty?.name || 'No specialty'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
 
             <div className="grid gap-4 py-4">
@@ -501,6 +475,28 @@ const UserFormDialog: React.FC<UserFormDialogProps> = ({
           </div>
         )}
 
+        {formData.role === 'responsable' && (
+          <div className="grid gap-2">
+            <Label htmlFor="doctorId">
+              Assigner au médecin à gérer
+            </Label>
+            <Select
+              value={formData.doctorId}
+              onValueChange={(value) => handleChange('doctorId', value)}
+            >
+              <SelectTrigger id="doctorId">
+                <SelectValue placeholder="Sélectionner un médecin" />
+              </SelectTrigger>
+              <SelectContent>
+                {doctors.map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                    {doctor.user?.name || 'Unknown'} - {doctor.specialty?.name || 'No specialty'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
