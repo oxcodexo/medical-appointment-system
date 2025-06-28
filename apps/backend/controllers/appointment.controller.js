@@ -7,6 +7,7 @@ const Specialty = db.specialty;
 const Notification = db.notification;
 const NotificationTemplate = db.notificationTemplate;
 const Sequelize = require('sequelize');
+const sendEmail = require('../utils/send-email');
 const { Op } = Sequelize;
 
 // Helper function to send appointment notifications
@@ -449,6 +450,10 @@ exports.updateStatus = async (req, res) => {
       appointment.notes = notes;
 
     await appointment.save();
+
+    // send an email to the user if completed
+    if (status === AppointmentStatus.CONFIRMED) 
+      await sendEmail(appointment.patientEmail, appointment.patientName,appointment.date,appointment.doctor.user.name);
 
     // // Send notification based on status change
     // await sendAppointmentNotification(
